@@ -1,0 +1,31 @@
+{
+  "name": "lorepin-mcp-automation",
+  "version": "1.0.0",
+  "description": "MCP Server automation scripts for LorePin CI/CD",
+  "main": "mcp-automation.js",
+  "scripts": {
+    "pull": "node mcp-automation.js pull",
+    "push": "node mcp-automation.js push",
+    "merge": "node mcp-automation.js merge",
+    "rollback": "node mcp-automation.js rollback",
+    "rollback-file": "node mcp-automation.js rollback-file",
+    "monitor": "node mcp-automation.js monitor",
+    "verify": "node mcp-automation.js verify",
+    "help": "node mcp-automation.js help"
+  },
+  "keywords": [
+    "mcp",
+    "automation",
+    "ci-cd",
+    "lorepin"
+  ],
+  "author": "LorePin Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "node-cron": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
