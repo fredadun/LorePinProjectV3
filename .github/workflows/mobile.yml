@@ -1,0 +1,40 @@
+name: Mobile CI/CD
+
+on:
+  push:
+    branches: [ development, test, main ]
+    paths:
+      - 'mobile/**'
+  pull_request:
+    branches: [ development, test, main ]
+    paths:
+      - 'mobile/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze project source
+        run: flutter analyze
+      - name: Run tests
+        run: flutter test
+      - name: Build APK
+        if: github.ref == 'refs/heads/main'
+        run: flutter build apk --release
+      - name: Upload APK
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-apk
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
