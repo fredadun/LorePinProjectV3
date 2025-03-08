@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: LorePin Documentation
+    url: https://github.com/fredadun/LorePinProjectV3/tree/main/Docs
+    about: Check the documentation for more information about the project.
+  - name: LorePin Team
+    url: https://github.com/fredadun
+    about: Contact the LorePin team for questions or support.
