@@ -1,197 +1,235 @@
-/**
- * Script to push LorePin project files to GitHub
- * Usage: node push-project.js --branch=development
- */
-
-const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { Octokit } = require('@octokit/rest');
+require('dotenv').config();
+
+console.log('Starting push-project script...');
+
+// Load token from environment variable
+const token = process.env.GITHUB_TOKEN;
+if (!token) {
+  console.error('ERROR: GitHub token not found in environment variables!');
+  console.error('Make sure you have a .env file with GITHUB_TOKEN=your_token');
+  process.exit(1);
+}
+console.log('GitHub token found in environment variables.');
 
 // Parse command line arguments
-const args = {};
-process.argv.slice(2).forEach(arg => {
-  if (arg.startsWith('--')) {
-    const [key, value] = arg.substring(2).split('=');
-    args[key] = value !== undefined ? value : true;
-  }
-});
-
-const branch = args.branch || 'development';
-const projectRoot = path.resolve(__dirname, '..');
+const args = process.argv.slice(2);
+console.log('Command line arguments:', args);
+const branchArg = args.find(arg => arg.startsWith('--branch='));
+const branch = branchArg ? branchArg.split('=')[1] : 'development';
+console.log('Using branch:', branch);
 
 // Configuration
 const config = {
   owner: 'fredadun',
   repo: 'LorePinProjectV3',
   branch: branch,
-  directories: [
-    { path: 'frontend/src', message: 'Add frontend source code' },
-    { path: 'frontend/public', message: 'Add frontend public assets' },
-    { path: 'frontend/*.js', message: 'Add frontend configuration files' },
-    { path: 'frontend/*.json', message: 'Add frontend package files' },
-    { path: 'backend/functions', message: 'Add backend functions' },
-    { path: 'backend/*.json', message: 'Add backend configuration files' },
-    { path: 'backend/*.rules', message: 'Add backend rules files' }
-  ],
-  excludeDirs: ['node_modules', '.git', '.next', 'dist', 'build'],
-  excludeFiles: ['.env', '.env.local', '*.log']
+  sourceDir: path.resolve(__dirname, '..'), // Parent directory of scripts
+  excludePatterns: [
+    // Directories to exclude
+    'node_modules',
+    '.git',
+    '.next',
+    'dist',
+    'build',
+    'coverage',
+    'pulled-files',
+    
+    // Files to exclude
+    '.env',
+    '.env.local',
+    '.env.development',
+    '.env.production',
+    '.DS_Store',
+    'Thumbs.db',
+    
+    // File patterns to exclude
+    '*.log',
+    '*.lock',
+    '*.tmp',
+    '*.temp'
+  ]
 };
 
-console.log(`Pushing LorePin project files to ${config.branch} branch...`);
+console.log(`Pushing files to ${config.owner}/${config.repo} on branch: ${config.branch}`);
+console.log('Source directory:', config.sourceDir);
 
-// Helper function to check if a path should be excluded
+// Initialize Octokit with GitHub token
+console.log('Initializing Octokit...');
+const octokit = new Octokit({
+  auth: token
+});
+
+// Function to check if a file should be excluded
 function shouldExclude(filePath) {
-  // Check excluded directories
-  for (const dir of config.excludeDirs) {
-    if (filePath.includes(`/${dir}/`) || filePath.endsWith(`/${dir}`)) {
-      return true;
-    }
+  // Always include these specific files
+  const alwaysInclude = [
+    'firebase.json',
+    'firestore.indexes.json',
+    'firestore.rules',
+    'storage.rules',
+    'package.json',
+    'README.md',
+    'backend/firebase.json',
+    'backend/firestore.indexes.json',
+    'backend/firestore.rules',
+    'backend/storage.rules',
+    'backend/functions/package.json',
+    'backend/functions/tsconfig.json',
+    'frontend/package.json',
+    'frontend/tsconfig.json',
+    'frontend/next.config.js',
+    'frontend/postcss.config.js',
+    'frontend/tailwind.config.js'
+  ];
+  
+  if (alwaysInclude.includes(filePath)) {
+    return false;
   }
   
-  // Check excluded files
-  for (const pattern of config.excludeFiles) {
+  // Check against exclusion patterns
+  return config.excludePatterns.some(pattern => {
     if (pattern.includes('*')) {
-      const regex = new RegExp(pattern.replace('.', '\\.').replace('*', '.*'));
-      if (regex.test(path.basename(filePath))) {
-        return true;
-      }
-    } else if (filePath.endsWith(pattern)) {
-      return true;
+      const regexPattern = pattern.replace(/\*/g, '.*');
+      return new RegExp(regexPattern).test(filePath);
     }
-  }
-  
-  return false;
+    return filePath.includes(pattern);
+  });
 }
 
-// Get all files matching a pattern
-function getFiles(pattern) {
-  const files = [];
+// Function to recursively get all files in a directory
+function getAllFiles(dir, fileList = []) {
+  console.log(`Scanning directory: ${dir}`);
   
-  if (pattern.includes('*')) {
-    // Handle glob patterns
-    const dirPath = path.dirname(pattern);
-    const filePattern = path.basename(pattern);
-    const fullDirPath = path.join(projectRoot, dirPath);
+  try {
+    const files = fs.readdirSync(dir);
+    console.log(`Found ${files.length} items in ${dir}`);
     
-    if (fs.existsSync(fullDirPath)) {
-      const dirFiles = fs.readdirSync(fullDirPath);
-      for (const file of dirFiles) {
-        if (filePattern === '*' || filePattern === '*.*' || 
-            (filePattern.startsWith('*.') && file.endsWith(filePattern.substring(1)))) {
-          const filePath = path.join(dirPath, file);
-          const fullPath = path.join(projectRoot, filePath);
-          
-          if (fs.statSync(fullPath).isFile() && !shouldExclude(filePath)) {
-            files.push({
-              path: filePath.replace(/\\/g, '/'),
-              fullPath: fullPath
-            });
-          }
-        }
-      }
-    }
-  } else {
-    // Handle directory paths
-    const fullPath = path.join(projectRoot, pattern);
-    if (fs.existsSync(fullPath)) {
-      const isDirectory = fs.statSync(fullPath).isDirectory();
+    // Debug: Print all items in the directory
+    files.forEach(file => {
+      const filePath = path.join(dir, file);
+      const relativePath = path.relative(config.sourceDir, filePath);
+      console.log(`  - ${relativePath} (${fs.statSync(filePath).isDirectory() ? 'directory' : 'file'})`);
+    });
+    
+    files.forEach(file => {
+      const filePath = path.join(dir, file);
+      const relativePath = path.relative(config.sourceDir, filePath);
       
-      if (isDirectory) {
-        // Get all files in directory recursively
-        function traverseDir(dir, baseDir) {
-          const entries = fs.readdirSync(dir);
-          
-          for (const entry of entries) {
-            const entryPath = path.join(dir, entry);
-            const relativePath = path.relative(projectRoot, entryPath);
-            
-            if (shouldExclude(relativePath)) {
-              continue;
-            }
-            
-            const stat = fs.statSync(entryPath);
-            
-            if (stat.isDirectory()) {
-              traverseDir(entryPath, baseDir);
-            } else if (stat.isFile()) {
-              files.push({
-                path: relativePath.replace(/\\/g, '/'),
-                fullPath: entryPath
-              });
-            }
+      if (shouldExclude(relativePath)) {
+        console.log(`Excluding: ${relativePath}`);
+        return;
+      }
+      
+      try {
+        const stats = fs.statSync(filePath);
+        
+        if (stats.isDirectory()) {
+          fileList = getAllFiles(filePath, fileList);
+        } else {
+          console.log(`Adding file: ${relativePath}`);
+          try {
+            const content = fs.readFileSync(filePath, 'utf8');
+            fileList.push({
+              path: relativePath,
+              content: content
+            });
+          } catch (error) {
+            console.error(`Error reading file ${filePath}:`, error.message);
           }
         }
-        
-        traverseDir(fullPath, pattern);
-      } else {
-        // Single file
-        const relativePath = path.relative(projectRoot, fullPath);
-        if (!shouldExclude(relativePath)) {
-          files.push({
-            path: relativePath.replace(/\\/g, '/'),
-            fullPath: fullPath
-          });
-        }
+      } catch (error) {
+        console.error(`Error accessing ${filePath}:`, error.message);
       }
-    }
+    });
+  } catch (error) {
+    console.error(`Error reading directory ${dir}:`, error.message);
   }
   
-  return files;
+  return fileList;
 }
 
-// Push files in batches
-async function pushFiles(files, message) {
-  // Maximum number of files to push in a single batch
-  const BATCH_SIZE = 5;
-  
-  // Process files in batches
-  for (let i = 0; i < files.length; i += BATCH_SIZE) {
-    const batch = files.slice(i, i + BATCH_SIZE);
-    const batchFiles = [];
+// Function to push a single file
+async function pushFile(file) {
+  try {
+    console.log(`Pushing: ${file.path}`);
     
-    for (const file of batch) {
-      try {
-        // Read file content
-        const content = fs.readFileSync(file.fullPath, 'utf8');
-        batchFiles.push({
-          path: file.path,
-          content: content
-        });
-      } catch (error) {
-        console.error(`Error reading file ${file.path}: ${error.message}`);
+    // Check if file exists in the repository
+    let sha;
+    try {
+      const response = await octokit.repos.getContent({
+        owner: config.owner,
+        repo: config.repo,
+        path: file.path,
+        ref: config.branch
+      });
+      
+      if (response.data && response.data.sha) {
+        sha = response.data.sha;
       }
+    } catch (error) {
+      // File doesn't exist, which is fine
     }
     
-    if (batchFiles.length > 0) {
-      try {
-        const filesJson = JSON.stringify(batchFiles).replace(/"/g, '\\"');
-        const batchMessage = `${message} (batch ${Math.floor(i / BATCH_SIZE) + 1})`;
-        
-        const command = `mcp__push_files --owner="${config.owner}" --repo="${config.repo}" --branch="${config.branch}" --message="${batchMessage}" --files='${filesJson}'`;
-        
-        execSync(command);
-        console.log(`Pushed batch ${Math.floor(i / BATCH_SIZE) + 1} (${batchFiles.length} files)`);
-      } catch (error) {
-        console.error(`Error pushing batch: ${error.message}`);
-      }
+    // Create or update the file
+    const response = await octokit.repos.createOrUpdateFileContents({
+      owner: config.owner,
+      repo: config.repo,
+      path: file.path,
+      message: `Update ${file.path}`,
+      content: Buffer.from(file.content).toString('base64'),
+      branch: config.branch,
+      sha: sha
+    });
+    
+    console.log(`Pushed: ${file.path}`);
+    return true;
+  } catch (error) {
+    console.error(`Error pushing ${file.path}:`, error.message);
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Data:', JSON.stringify(error.response.data, null, 2));
     }
+    return false;
   }
 }
 
-// Process each directory/pattern
-async function processDirectories() {
-  for (const dir of config.directories) {
-    console.log(`Processing ${dir.path}...`);
-    const files = getFiles(dir.path);
-    console.log(`Found ${files.length} files in ${dir.path}`);
+// Main function to push files
+async function pushFiles() {
+  try {
+    // Get all files
+    console.log('Gathering files...');
+    const files = getAllFiles(config.sourceDir);
+    console.log(`Found ${files.length} files to push`);
     
-    if (files.length > 0) {
-      await pushFiles(files, dir.message);
+    // Push all files
+    const filesToPush = files; // Push all files
+    console.log(`Pushing ${filesToPush.length} files...`);
+    
+    // Push files in sequence to avoid rate limits
+    let successCount = 0;
+    for (let i = 0; i < filesToPush.length; i++) {
+      const file = filesToPush[i];
+      console.log(`[${i+1}/${filesToPush.length}] Pushing: ${file.path}`);
+      
+      const success = await pushFile(file);
+      if (success) successCount++;
+      
+      // Add a delay to avoid rate limiting
+      if (i < filesToPush.length - 1) { // Don't wait after the last file
+        console.log('Waiting 3 seconds before next file...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
     }
+    
+    console.log(`Successfully pushed ${successCount}/${filesToPush.length} files!`);
+  } catch (error) {
+    console.error('Error pushing files:', error.message);
+    process.exit(1);
   }
 }
 
-// Run the script
-processDirectories()
-  .then(() => console.log('Push complete!'))
-  .catch(error => console.error(`Error: ${error.message}`));
+// Execute the push
+pushFiles(); 
