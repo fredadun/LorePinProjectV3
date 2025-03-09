@@ -32,16 +32,21 @@ The CMS implementation follows a phased approach:
 
 ## Documentation
 
-- [CMS Specifications](./cms-specifications.md) - Detailed requirements and specifications for the CMS
-- [CMS Implementation Plan](./cms-implementation-plan.md) - Step-by-step plan for implementing the CMS
-- [CMS Database Schema](./cms-database-schema.md) - Database schema design for the CMS
-- [AI-Driven Content Moderation](./cms-ai-moderation.md) - AI-driven content moderation system design
-- [CMS UI Mockups](./cms-ui-mockups.md) - UI mockups for the CMS
-- [Implementation Progress](./implementation-progress.md) - Current implementation progress and next steps
-- [Implementation Summary](./implementation-summary.md) - Comprehensive summary of implementation progress
+- [CMS Specifications](./CMSSpecifications.md) - Overview of the CMS requirements and features
+- [CMS Implementation Plan](./CMSImplementationPlan.md) - Detailed plan for implementing the CMS
+- [CMS Database Schema](./CMSDatabaseSchema.md) - Database schema design for the CMS
+- [AI-Driven Content Moderation](./CMSAIModeration.md) - Design for AI-driven content moderation
+- [CMS UI Mockups](./CMSUIMockups.md) - UI mockups for the CMS
+- [Implementation Progress](./implementation-progress.md) - Current progress of the implementation
+- [Implementation Summary](./implementation-summary.md) - Summary of the implementation
 - [Next Phase Plan](./next-phase-plan.md) - Detailed plan for the next implementation phase
-- [Pre-Deployment Checklist](./pre-deployment-checklist.md) - Comprehensive checklist for production deployment
-- [UI Testing Guide](./ui-testing-guide.md) - Guide for testing the CMS user interface
+- [Pre-Deployment Checklist](./pre-deployment-checklist.md) - Checklist for pre-deployment verification
+- [UI Testing Guide](./ui-testing-guide.md) - Guide for testing the CMS UI
+- [Master Implementation Plan](./master-implementation-plan.md) - Comprehensive plan tying all implementation phases together
+- [AI Integration Plan](./ai-integration-plan.md) - Detailed plan for AI service integration
+- [Frontend Implementation Plan](./frontend-implementation-plan.md) - Detailed plan for frontend components
+- [Testing Implementation Plan](./testing-implementation-plan.md) - Detailed plan for testing strategy
+- [Deployment Implementation Plan](./deployment-implementation-plan.md) - Detailed plan for deployment process
 
 ## Related Issues
 
