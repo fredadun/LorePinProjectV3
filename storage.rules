@@ -1,0 +1,45 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    
+    // Challenge images - anyone can read, only authenticated users can upload
+    match /challenges/{challengeId}/{imageFile} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+                    (request.resource.size < 5 * 1024 * 1024) && // 5MB max
+                    request.resource.contentType.matches('image/.*');
+    }
+    
+    // Submission media - anyone can read, only authenticated users can upload to their own folder
+    match /submissions/{userId}/{mediaFile} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+                    request.auth.uid == userId &&
+                    (request.resource.size < 20 * 1024 * 1024) && // 20MB max
+                    (request.resource.contentType.matches('image/.*') || 
+                     request.resource.contentType.matches('video/.*'));
+    }
+    
+    // Sponsor logos - anyone can read, only the sponsor can upload
+    match /sponsors/{sponsorId}/{logoFile} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+                    request.auth.uid == sponsorId &&
+                    (request.resource.size < 2 * 1024 * 1024) && // 2MB max
+                    request.resource.contentType.matches('image/.*');
+    }
+    
+    // User profile pictures - anyone can read, only the user can upload
+    match /users/{userId}/{profilePic} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+                    request.auth.uid == userId &&
+                    (request.resource.size < 2 * 1024 * 1024) && // 2MB max
+                    request.resource.contentType.matches('image/.*');
+    }
+  }
+}
