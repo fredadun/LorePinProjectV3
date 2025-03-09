@@ -14,6 +14,7 @@ The LorePin project follows an Agile development approach with two-week sprints.
 - [Project Board Setup](./ProjectBoardSetup.md) - Instructions for setting up and managing the Kanban board
 - [Milestones Setup](./MilestonesSetup.md) - Guide for creating and managing sprint milestones
 - [Sprint Planning Process](./SprintPlanningProcess.md) - Detailed process for planning and executing sprints
+- [Development Process Guide](./DevelopmentProcessGuide.md) - Comprehensive guide for sprint-based development workflow
 
 ### 2. User Stories by Sprint
 
@@ -47,6 +48,7 @@ To get started with the LorePin project management:
    - Assign issues to team members and update the project board
 
 3. **Execute the sprint**:
+   - Follow the [Development Process Guide](./DevelopmentProcessGuide.md) for implementing features
    - Hold daily standups to track progress
    - Update the project board as tasks progress
    - Conduct mid-sprint reviews to address any blockers
