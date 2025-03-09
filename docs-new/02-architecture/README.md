@@ -7,6 +7,7 @@ This section provides detailed information about the LorePin project's architect
 - [Technical Architecture](./technical-architecture.md) - Overview of the entire system architecture
 - [Mobile Architecture](./mobile-architecture.md) - Detailed architecture of the mobile application
 - [Authentication Flow](./authentication-flow.md) - User authentication and authorization processes
+- [Landing Page Specification](./landing-page-specification.md) - Detailed requirements for the landing page v2.1
 
 ## System Overview
 
