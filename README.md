@@ -1,129 +1,102 @@
-# LorePin Project
+# LorePin
 
-## Overview
-LorePin is a location-based storytelling platform that rewards users for participating in challenges. The application connects creators, sponsors, audiences, and local communities through interactive location-based content creation and a reward system called LoreCoins.
+LorePin is a location-based challenge platform that connects users with sponsors through engaging challenges and rewards.
 
-## Core Features
+## Project Structure
 
-### 🗺️ Location-Based Challenges
-- Discover challenges on an interactive map
-- Create and participate in location-specific content challenges
-- Three challenge types: Competitive, Collaborative, and Daily Quests
+- `/frontend` - Next.js web application
+- `/backend` - Firebase Cloud Functions
+- `/Docs` - Project documentation
 
-### 💰 LoreCoins Reward System
-- Earn LoreCoins through submissions (20 coins per submission)
-- Daily voting rewards (5 coins/day)
-- Streak bonuses (Day 3: 30 coins, Day 7: 100 coins)
-- Redeem for partner discounts and in-app perks
-
-### 👥 User Types
-1. **Creators** - Create content at specific locations to earn rewards
-2. **Sponsors** - Create challenges to drive engagement with their brand
-3. **Audiences** - Discover and interact with authentic local stories
-4. **Local Communities** - Use the platform to boost cultural preservation and tourism
-
-### 🔍 Content Discovery
-- Interactive 3D map with challenge pins
-- Feed with trending and recent content
-- Advanced filtering options
-- Personalized recommendations
-
-## Technical Architecture
-
-### Technology Stack
-- **Frontend Web**: Next.js 14.x, React 18.x, TypeScript 5.x, Tailwind CSS 3.x
-- **3D Visualization**: Three.js, React Three Fiber, Framer Motion
-- **Mobile**: Flutter 3.19.x, Dart 3.x, Riverpod 2.x (Clean Architecture)
-- **Backend**: Firebase (Authentication, Firestore, Storage, Cloud Functions)
-- **DevOps**: GitHub Actions, ESLint, Jest, Cypress, Codemagic
-
-### Project Structure
-```
-lorepin/
-├── frontend/                # Next.js frontend application
-├── backend/                 # Firebase backend
-├── mobile/                  # Mobile application
-├── .github/                 # GitHub configuration
-│   └── workflows/           # GitHub Actions workflows
-├── Docs/                    # Project documentation
-├── .gitignore               # Git ignore file
-├── package.json             # Root package.json for scripts
-└── README.md                # Project documentation
-```
-
-## Getting Started
+## Deployment Setup
 
 ### Prerequisites
-- Node.js (v18.x or later)
-- npm (v9.x or later)
-- Git (v2.x or later)
-- Firebase CLI (`npm install -g firebase-tools`)
-- Flutter SDK (v3.19.0 or later) for mobile development
-- Android Studio (latest version) for Android development
-- Xcode (latest version, Mac only) for iOS development
 
-### Installation
-1. Clone the repository
-   ```bash
-   git clone https://github.com/fredadun/LorePinProjectV3.git
-   cd LorePinProjectV3
+1. Firebase project with Firestore, Storage, and Hosting enabled
+2. GitHub repository with Actions enabled
+3. Node.js 18+ installed
+
+### GitHub Secrets Setup
+
+For the GitHub Actions workflows to deploy successfully, you need to set up the following secrets in your repository:
+
+1. `FIREBASE_SERVICE_ACCOUNT` - Firebase service account JSON (base64 encoded)
+2. `FIREBASE_API_KEY` - Firebase API key
+3. `FIREBASE_AUTH_DOMAIN` - Firebase auth domain
+4. `FIREBASE_PROJECT_ID` - Firebase project ID
+5. `FIREBASE_STORAGE_BUCKET` - Firebase storage bucket
+6. `FIREBASE_MESSAGING_SENDER_ID` - Firebase messaging sender ID
+7. `FIREBASE_APP_ID` - Firebase app ID
+8. `FIREBASE_MEASUREMENT_ID` - Firebase measurement ID (optional)
+9. `GOOGLE_MAPS_API_KEY` - Google Maps API key (if using location features)
+
+### Setting up Firebase Service Account
+
+1. Go to Firebase Console > Project Settings > Service Accounts
+2. Click "Generate new private key"
+3. Download the JSON file
+4. Base64 encode the file content:
+   ```
+   cat path/to/service-account.json | base64
+   ```
+5. Add the encoded string as the `FIREBASE_SERVICE_ACCOUNT` secret in GitHub
+
+### Manual Deployment
+
+If you need to deploy manually:
+
+1. Install Firebase CLI:
+   ```
+   npm install -g firebase-tools
    ```
 
-2. Set up the frontend
-   ```bash
+2. Login to Firebase:
+   ```
+   firebase login
+   ```
+
+3. Build the web app:
+   ```
    cd frontend
    npm install
+   npm run build
    ```
 
-3. Set up the backend
-   ```bash
-   cd ../backend
-   npm install
+4. Deploy to Firebase:
+   ```
+   firebase deploy
    ```
 
-4. Set up the mobile app
-   ```bash
-   cd ../mobile
-   flutter pub get
-   ```
+## Development
 
-5. Configure environment variables
-   - Create `.env.local` files based on the provided templates
-   - Set up Firebase project and add configuration
+### Web Application
 
-6. Start the development servers
-   - Frontend: `npm run dev` in the frontend directory
-   - Backend: `npm run serve` in the backend directory
-   - Mobile: `flutter run` in the mobile directory
+```
+cd frontend
+npm install
+npm run dev
+```
 
-## Development Process
+### Cloud Functions
 
-### Agile Methodology
-- 2-week Scrum sprints with AI integration
-- Three-branch structure: Main (Production), Test (Staging), Development
-- CI/CD pipelines with GitHub Actions
+```
+cd backend/functions
+npm install
+npm run serve
+```
 
-### Implementation Timeline
-1. **Sprint 1**: User Onboarding & Profiles
-2. **Sprint 2**: Challenge System (Core)
-3. **Sprint 3**: LoreCoins Reward System
-4. **Sprint 4**: Content Discovery & Feed
-5. **Sprint 5**: Social Features & Sponsor Tools
-6. **Sprint 6**: Testing & Launch Prep
+### Firebase Emulators
 
-## Documentation
-Comprehensive documentation is available in the `Docs/` directory:
-- Technical Architecture
-- Mobile Architecture
-- Project Setup Guide
-- User Journeys
-- Authentication Flow
-- Dependency Requirements
-- GitHub Workflow
-- Agile Framework
+```
+firebase emulators:start
+```
 
-## License
-[MIT License](LICENSE)
+## Troubleshooting Deployment Issues
 
-## Contact
-For questions or support, please contact the LorePin team.
+If you encounter deployment failures:
+
+1. Check GitHub Actions logs for specific error messages
+2. Verify all required secrets are set correctly
+3. Ensure your Firebase project has the necessary services enabled
+4. Check that your service account has the required permissions
+5. Verify your project structure matches the paths in firebase.json
