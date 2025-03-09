@@ -15,7 +15,8 @@
     "pull-all": "node pull-all.js",
     "push-all": "node push-all.js",
     "sync-branches": "node sync-branches.js",
-    "push-project": "node push-project.js"
+    "push-project": "node push-project.js",
+    "pull-example": "node pull-example.js"
   },
   "keywords": [
     "mcp",
