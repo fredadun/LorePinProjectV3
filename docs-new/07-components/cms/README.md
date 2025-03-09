@@ -40,6 +40,8 @@ The CMS implementation follows a phased approach:
 - [Implementation Progress](./implementation-progress.md) - Current implementation progress and next steps
 - [Implementation Summary](./implementation-summary.md) - Comprehensive summary of implementation progress
 - [Next Phase Plan](./next-phase-plan.md) - Detailed plan for the next implementation phase
+- [Pre-Deployment Checklist](./pre-deployment-checklist.md) - Comprehensive checklist for production deployment
+- [UI Testing Guide](./ui-testing-guide.md) - Guide for testing the CMS user interface
 
 ## Related Issues
 
