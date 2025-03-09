@@ -1,51 +1,72 @@
-/**
- * Script to push all files from a local directory to a branch
- * Usage: node push-all.js --source=../my-code --branch=development --message="Update all files"
- */
-
-const { execSync } = require('child_process');
-const fs = require('fs');
+const { Octokit } = require('@octokit/rest');
+const fs = require('fs-extra');
 const path = require('path');
+require('dotenv').config();
 
 // Parse command line arguments
-const args = {};
-process.argv.slice(2).forEach(arg => {
-  if (arg.startsWith('--')) {
-    const [key, value] = arg.substring(2).split('=');
-    args[key] = value !== undefined ? value : true;
-  }
+const args = process.argv.slice(2);
+const branchArg = args.find(arg => arg.startsWith('--branch='));
+const branch = branchArg ? branchArg.split('=')[1] : 'development';
+const dirArg = args.find(arg => arg.startsWith('--dir='));
+const sourceDir = dirArg ? dirArg.split('=')[1] : path.resolve(__dirname, '..');
+
+// Configuration
+const config = {
+  owner: 'fredadun',
+  repo: 'LorePinProjectV3',
+  branch: branch,
+  sourceDir: sourceDir,
+  excludePatterns: [
+    'node_modules',
+    '.git',
+    '.env',
+    '.env.local',
+    '.DS_Store',
+    'build',
+    'dist',
+    'coverage',
+    '*.log',
+    '*.lock',
+    'pulled-files'
+  ]
+};
+
+console.log(`Pushing files from ${config.sourceDir} to ${config.owner}/${config.repo} on branch: ${config.branch}`);
+
+// Initialize Octokit with GitHub token from environment
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN
 });
 
-const sourceDir = args.source || './source';
-const branch = args.branch || 'development';
-const commitMessage = args.message || 'Update files';
-
-if (!fs.existsSync(sourceDir)) {
-  console.error(`Source directory ${sourceDir} does not exist!`);
-  process.exit(1);
+// Function to check if a file should be excluded
+function shouldExclude(filePath) {
+  return config.excludePatterns.some(pattern => {
+    if (pattern.includes('*')) {
+      const regexPattern = pattern.replace(/\*/g, '.*');
+      return new RegExp(regexPattern).test(filePath);
+    }
+    return filePath.includes(pattern);
+  });
 }
 
-console.log(`Pushing all files from ${sourceDir} to ${branch} branch...`);
-
-// Get all files recursively
+// Function to recursively get all files in a directory
 function getAllFiles(dir, fileList = []) {
   const files = fs.readdirSync(dir);
   
   files.forEach(file => {
     const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
+    const relativePath = path.relative(config.sourceDir, filePath);
     
-    if (stat.isDirectory()) {
-      // Skip .git and node_modules directories
-      if (file !== '.git' && file !== 'node_modules') {
-        getAllFiles(filePath, fileList);
-      }
+    if (shouldExclude(relativePath)) {
+      return;
+    }
+    
+    if (fs.statSync(filePath).isDirectory()) {
+      fileList = getAllFiles(filePath, fileList);
     } else {
-      // Get path relative to source directory
-      const relativePath = path.relative(sourceDir, filePath);
       fileList.push({
-        path: relativePath.replace(/\\/g, '/'), // Convert Windows paths to Unix
-        fullPath: filePath
+        path: relativePath,
+        content: fs.readFileSync(filePath, 'utf8')
       });
     }
   });
@@ -53,48 +74,63 @@ function getAllFiles(dir, fileList = []) {
   return fileList;
 }
 
-// Push files in batches
-async function pushFiles(files) {
-  // Maximum number of files to push in a single batch
-  const BATCH_SIZE = 10;
-  
-  // Process files in batches
-  for (let i = 0; i < files.length; i += BATCH_SIZE) {
-    const batch = files.slice(i, i + BATCH_SIZE);
-    const batchFiles = [];
+// Function to push a single file
+async function pushFile(file) {
+  try {
+    console.log(`Pushing: ${file.path}`);
     
-    for (const file of batch) {
-      try {
-        const content = fs.readFileSync(file.fullPath, 'utf8');
-        batchFiles.push({
-          path: file.path,
-          content: content
-        });
-      } catch (error) {
-        console.error(`Error reading file ${file.path}: ${error.message}`);
+    // Check if file exists in the repository
+    let sha;
+    try {
+      const response = await octokit.repos.getContent({
+        owner: config.owner,
+        repo: config.repo,
+        path: file.path,
+        ref: config.branch
+      });
+      
+      if (response.data && response.data.sha) {
+        sha = response.data.sha;
       }
+    } catch (error) {
+      // File doesn't exist, which is fine
     }
     
-    if (batchFiles.length > 0) {
-      try {
-        const filesJson = JSON.stringify(batchFiles).replace(/"/g, '\\"');
-        const batchMessage = `${commitMessage} (batch ${Math.floor(i / BATCH_SIZE) + 1})`;
-        
-        const command = `mcp__push_files --owner="fredadun" --repo="LorePinProjectV3" --branch="${branch}" --message="${batchMessage}" --files='${filesJson}'`;
-        
-        execSync(command);
-        console.log(`Pushed batch ${Math.floor(i / BATCH_SIZE) + 1} (${batchFiles.length} files)`);
-      } catch (error) {
-        console.error(`Error pushing batch: ${error.message}`);
-      }
-    }
+    // Create or update the file
+    await octokit.repos.createOrUpdateFileContents({
+      owner: config.owner,
+      repo: config.repo,
+      path: file.path,
+      message: `Update ${file.path}`,
+      content: Buffer.from(file.content).toString('base64'),
+      branch: config.branch,
+      sha: sha
+    });
+    
+    console.log(`Pushed: ${file.path}`);
+  } catch (error) {
+    console.error(`Error pushing ${file.path}:`, error.message);
   }
 }
 
-// Get all files and push them
-const files = getAllFiles(sourceDir);
-console.log(`Found ${files.length} files to push`);
+// Main function to push all files
+async function pushAllFiles() {
+  try {
+    console.log('Gathering files...');
+    const files = getAllFiles(config.sourceDir);
+    console.log(`Found ${files.length} files to push`);
+    
+    // Push files in sequence to avoid rate limits
+    for (const file of files) {
+      await pushFile(file);
+    }
+    
+    console.log('All files pushed successfully!');
+  } catch (error) {
+    console.error('Error pushing files:', error.message);
+    process.exit(1);
+  }
+}
 
-pushFiles(files)
-  .then(() => console.log('Push complete!'))
-  .catch(error => console.error(`Error: ${error.message}`));
+// Execute the push
+pushAllFiles(); 
