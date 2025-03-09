@@ -1,68 +1,75 @@
-/**
- * Example script demonstrating how to pull files from GitHub using MCP Server
- * Usage: node pull-example.js
- */
-
-const { execSync } = require('child_process');
-const fs = require('fs');
+const { Octokit } = require('@octokit/rest');
+const fs = require('fs-extra');
 const path = require('path');
+require('dotenv').config();
 
 // Configuration
 const config = {
   owner: 'fredadun',
   repo: 'LorePinProjectV3',
   branch: 'development',
-  outputDir: path.join(__dirname, 'pulled-files'),
+  outputDir: path.resolve(__dirname, '..', 'pulled-files'),
   filesToPull: [
     'frontend/src/components/ui/button.tsx',
     'backend/functions/src/index.ts'
   ]
 };
 
+console.log(`Pulling specific files from ${config.owner}/${config.repo} on branch: ${config.branch}`);
+
+// Initialize Octokit with GitHub token from environment
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN
+});
+
 // Ensure output directory exists
-if (!fs.existsSync(config.outputDir)) {
-  fs.mkdirSync(config.outputDir, { recursive: true });
-}
+fs.ensureDirSync(config.outputDir);
 
-console.log(`Pulling files from ${config.branch} branch...`);
-
-// Pull a specific file
-async function pullFile(filePath) {
+// Function to download a file
+async function downloadFile(filePath) {
   try {
-    console.log(`Pulling ${filePath}...`);
+    console.log(`Downloading: ${filePath}`);
     
-    const command = `mcp__get_file_contents --owner="${config.owner}" --repo="${config.repo}" --path="${filePath}" --branch="${config.branch}"`;
-    
-    const result = execSync(command).toString();
-    const fileData = JSON.parse(result);
-    const fileContent = fileData.content;
-    
-    // Create directory structure if needed
+    const response = await octokit.repos.getContent({
+      owner: config.owner,
+      repo: config.repo,
+      path: filePath,
+      ref: config.branch
+    });
+
+    const content = Buffer.from(response.data.content, 'base64').toString('utf8');
     const outputPath = path.join(config.outputDir, filePath);
-    const dirName = path.dirname(outputPath);
     
-    if (!fs.existsSync(dirName)) {
-      fs.mkdirSync(dirName, { recursive: true });
-    }
+    // Ensure directory exists
+    fs.ensureDirSync(path.dirname(outputPath));
     
     // Write file
-    fs.writeFileSync(outputPath, fileContent);
-    console.log(`Successfully pulled ${filePath} to ${outputPath}`);
-    
-    return fileContent;
+    fs.writeFileSync(outputPath, content);
+    console.log(`Downloaded: ${filePath} to ${outputPath}`);
+    return true;
   } catch (error) {
-    console.error(`Error pulling file ${filePath}: ${error.message}`);
-    return null;
+    console.error(`Error downloading ${filePath}:`, error.message);
+    return false;
   }
 }
 
-// Pull all files
-async function pullAllFiles() {
-  for (const filePath of config.filesToPull) {
-    await pullFile(filePath);
+// Main function to pull specified files
+async function pullFiles() {
+  try {
+    console.log('Starting to pull files...');
+    
+    let successCount = 0;
+    for (const filePath of config.filesToPull) {
+      const success = await downloadFile(filePath);
+      if (success) successCount++;
+    }
+    
+    console.log(`Pulled ${successCount}/${config.filesToPull.length} files successfully to: ${config.outputDir}`);
+  } catch (error) {
+    console.error('Error pulling files:', error.message);
+    process.exit(1);
   }
-  console.log('All files pulled successfully!');
 }
 
-// Run the script
-pullAllFiles();
+// Execute the pull
+pullFiles(); 
