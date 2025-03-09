@@ -114,6 +114,32 @@ Sync all code from one branch to another:
 npm run sync-branches -- --source=main --target=development
 ```
 
+### Project-Specific Operations
+
+#### Push Project Files
+
+Push the entire LorePin project structure to GitHub:
+
+```bash
+npm run push-project -- --branch=development
+```
+
+This script will:
+1. Push frontend source code (src directory)
+2. Push frontend public assets
+3. Push frontend configuration files
+4. Push backend functions
+5. Push backend configuration files
+
+The script automatically excludes:
+- node_modules directories
+- .git directories
+- .next directories (Next.js build)
+- Environment files (.env, .env.local)
+- Log files
+
+You can customize which directories and files to push by editing the `directories` array in the `push-project.js` file.
+
 ## Scheduled Automation
 
 For scheduled automation, you can set up cron jobs or use a CI/CD platform to run these scripts at specific intervals.
