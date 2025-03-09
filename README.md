@@ -1,102 +1,113 @@
-# LorePin
+# LorePin Project
 
 LorePin is a location-based challenge platform that connects users with sponsors through engaging challenges and rewards.
 
 ## Project Structure
 
-- `/frontend` - Next.js web application
-- `/backend` - Firebase Cloud Functions
-- `/Docs` - Project documentation
+The project is organized into the following main directories:
 
-## Deployment Setup
+- **frontend**: React-based web application
+- **backend**: Firebase serverless backend
+  - **functions**: Cloud Functions for Firebase
+  - **firestore**: Firestore database configuration
+  - **storage**: Firebase Storage rules
+- **mobile**: Flutter-based mobile application
+- **docs**: Project documentation
+- **scripts**: Automation scripts for development
+
+## Getting Started
 
 ### Prerequisites
 
-1. Firebase project with Firestore, Storage, and Hosting enabled
-2. GitHub repository with Actions enabled
-3. Node.js 18+ installed
+- Node.js 18 or higher
+- Firebase CLI
+- Flutter SDK (for mobile development)
+- Git
 
-### GitHub Secrets Setup
+### Setup
 
-For the GitHub Actions workflows to deploy successfully, you need to set up the following secrets in your repository:
-
-1. `FIREBASE_SERVICE_ACCOUNT` - Firebase service account JSON (base64 encoded)
-2. `FIREBASE_API_KEY` - Firebase API key
-3. `FIREBASE_AUTH_DOMAIN` - Firebase auth domain
-4. `FIREBASE_PROJECT_ID` - Firebase project ID
-5. `FIREBASE_STORAGE_BUCKET` - Firebase storage bucket
-6. `FIREBASE_MESSAGING_SENDER_ID` - Firebase messaging sender ID
-7. `FIREBASE_APP_ID` - Firebase app ID
-8. `FIREBASE_MEASUREMENT_ID` - Firebase measurement ID (optional)
-9. `GOOGLE_MAPS_API_KEY` - Google Maps API key (if using location features)
-
-### Setting up Firebase Service Account
-
-1. Go to Firebase Console > Project Settings > Service Accounts
-2. Click "Generate new private key"
-3. Download the JSON file
-4. Base64 encode the file content:
-   ```
-   cat path/to/service-account.json | base64
-   ```
-5. Add the encoded string as the `FIREBASE_SERVICE_ACCOUNT` secret in GitHub
-
-### Manual Deployment
-
-If you need to deploy manually:
-
-1. Install Firebase CLI:
-   ```
-   npm install -g firebase-tools
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/fredadun/LorePinProjectV3.git
+   cd LorePinProjectV3
    ```
 
-2. Login to Firebase:
-   ```
-   firebase login
-   ```
-
-3. Build the web app:
-   ```
+2. Set up the frontend:
+   ```bash
    cd frontend
    npm install
-   npm run build
+   npm run dev
    ```
 
-4. Deploy to Firebase:
+3. Set up the backend:
+   ```bash
+   cd backend/functions
+   npm install
+   firebase emulators:start
    ```
-   firebase deploy
+
+4. Set up the mobile app:
+   ```bash
+   cd mobile
+   flutter pub get
+   flutter run
    ```
 
-## Development
+## Development Workflow
 
-### Web Application
+1. Always work on feature branches:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
 
-```
-cd frontend
-npm install
-npm run dev
-```
+2. Commit changes with descriptive messages:
+   ```bash
+   git commit -m "Add feature: description of changes"
+   ```
 
-### Cloud Functions
+3. Push changes to the development branch:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
 
-```
-cd backend/functions
-npm install
-npm run serve
-```
+4. Create a pull request to merge into the development branch
 
-### Firebase Emulators
+## Automation Scripts
 
-```
-firebase emulators:start
-```
+The project includes various automation scripts to help with development. See the [scripts README](scripts/README.md) for details.
 
-## Troubleshooting Deployment Issues
+## Core Features
 
-If you encounter deployment failures:
+- User authentication with multiple providers
+- Location-based challenges
+- Media submission and validation
+- LoreCoin rewards system
+- Sponsor management
+- User profiles and skills
 
-1. Check GitHub Actions logs for specific error messages
-2. Verify all required secrets are set correctly
-3. Ensure your Firebase project has the necessary services enabled
-4. Check that your service account has the required permissions
-5. Verify your project structure matches the paths in firebase.json
+## Architecture
+
+- **Frontend**: React with Redux for state management
+- **Backend**: Firebase (Auth, Firestore, Functions, Storage)
+- **Mobile**: Flutter with Riverpod for state management
+
+## Documentation
+
+Detailed documentation is available in the `docs` directory:
+
+- [Project Setup](docs/ProjectSetup.md)
+- [Architecture Overview](docs/ArchitectureOverview.md)
+- [API Documentation](docs/APIDocumentation.md)
+- [Mobile Architecture](docs/MobileArchitecture.md)
+- [Improvement Roadmap](docs/ImprovementRoadmap.md)
+
+## Contributing
+
+1. Follow the coding standards defined in the project
+2. Write clean, modular code with appropriate comments
+3. Include tests for new features
+4. Update documentation as needed
+
+## License
+
+This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
