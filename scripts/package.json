@@ -8,7 +8,8 @@
     "pull-all": "node pull-all.js",
     "push-all": "node push-all.js",
     "sync-branches": "node sync-branches.js",
-    "pull-example": "node pull-example.js"
+    "pull-example": "node pull-example.js",
+    "check-repo": "node check-repo-structure.js"
   },
   "author": "LorePin Team",
   "license": "ISC",
