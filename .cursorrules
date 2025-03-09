@@ -1,0 +1,421 @@
+{
+  "name": "LorePin MVP Technical Rules",
+  "description": "Comprehensive coding standards and technical specifications for the LorePin MVP application",
+  "rules": [
+    {
+      "name": "Serverless Foundation",
+      "description": "Enforce Firebase serverless architecture and layered structure",
+      "include": ["**/*.{js,ts,tsx,dart}"],
+      "exclude": ["**/node_modules/**", "**/build/**", "**/dist/**"],
+      "patterns": [
+        {
+          "pattern": "import\\s+.*\\s+from\\s+['|\"]firebase/auth['|\"]|import\\s+.*\\s+from\\s+['|\"]firebase/firestore['|\"]|import\\s+.*\\s+from\\s+['|\"]firebase/functions['|\"]|import\\s+.*\\s+from\\s+['|\"]firebase/storage['|\"]",
+          "message": "All backend services must use Firebase components (Auth, Firestore, Functions, Storage)"
+        },
+        {
+          "pattern": "firebase\\.initializeApp|initializeApp\\(|FirebaseApp\\.instance",
+          "message": "Firebase application must be properly initialized"
+        }
+      ]
+    },
+    {
+      "name": "Frontend Implementation",
+      "description": "Enforce React with Redux for web and Flutter for mobile",
+      "include": ["**/web/**/*.{js,ts,tsx}", "**/mobile/**/*.dart"],
+      "patterns": [
+        {
+          "pattern": "import\\s+.*\\s+from\\s+['|\"]react['|\"]|import\\s+.*\\s+from\\s+['|\"]react-dom['|\"]",
+          "message": "Web frontend must use React",
+          "include": ["**/web/**/*.{js,ts,tsx}"]
+        },
+        {
+          "pattern": "import\\s+.*\\s+from\\s+['|\"]react-redux['|\"]|import\\s+\\{\\s*createStore|configureStore\\s*\\}\\s+from\\s+['|\"]redux|@reduxjs/toolkit['|\"]",
+          "message": "Web frontend must use Redux for state management",
+          "include": ["**/web/**/*.{js,ts,tsx}"]
+        },
+        {
+          "pattern": "import\\s+'package:flutter|import\\s+.*flutter",
+          "message": "Mobile frontend must use Flutter framework",
+          "include": ["**/mobile/**/*.dart"]
+        }
+      ]
+    },
+    {
+      "name": "React Code Standards",
+      "description": "Enforce functional components and hooks",
+      "include": ["**/web/**/*.{jsx,tsx}"],
+      "patterns": [
+        {
+          "pattern": "function\\s+[A-Z][A-Za-z]*\\(|const\\s+[A-Z][A-Za-z]*\\s*=\\s*\\(\\s*\\)\\s*=>|const\\s+[A-Z][A-Za-z]*\\s*=\\s*React\\.memo\\(|const\\s+[A-Z][A-Za-z]*\\s*=\\s*React\\.forwardRef\\(",
+          "message": "React components should use functional component pattern"
+        },
+        {
+          "pattern": "useState\\(|useEffect\\(|useContext\\(|useCallback\\(|useMemo\\(|useReducer\\(|useRef\\(",
+          "message": "React components should use hooks for state and effects"
+        },
+        {
+          "pattern": "class\\s+[A-Z][A-Za-z]*\\s+extends\\s+React\\.Component",
+          "message": "Avoid using class components, prefer functional components with hooks"
+        }
+      ]
+    },
+    {
+      "name": "Flutter Code Standards",
+      "description": "Enforce Clean Architecture and Riverpod",
+      "include": ["**/mobile/**/*.dart"],
+      "patterns": [
+        {
+          "pattern": "import\\s+'package:riverpod|import\\s+'package:flutter_riverpod",
+          "message": "Flutter app should use Riverpod for state management"
+        },
+        {
+          "pattern": "class\\s+[A-Z][A-Za-z]*Repository|class\\s+[A-Z][A-Za-z]*UseCase|class\\s+[A-Z][A-Za-z]*Service",
+          "message": "Flutter code should follow Clean Architecture patterns with proper layer separation"
+        }
+      ]
+    },
+    {
+      "name": "Data Models Validation",
+      "description": "Enforce proper Firestore collection schemas",
+      "include": ["**/models/**/*.{ts,js}"],
+      "patterns": [
+        {
+          "pattern": "interface\\s+User\\s*\\{[^}]*userId\\s*:\\s*string[^}]*skills\\s*:\\s*string\\[\\][^}]*followers\\s*:\\s*string\\[\\][^}]*loreCoins\\s*:\\s*number",
+          "message": "User model must include all required fields: userId, skills[], followers[], loreCoins"
+        },
+        {
+          "pattern": "interface\\s+Challenge\\s*\\{[^}]*location\\s*:\\s*\\{[^}]*_lat\\s*:\\s*number[^}]*_long\\s*:\\s*number[^}]*\\}[^}]*sponsorId\\s*:\\s*string",
+          "message": "Challenge model must include GeoPoint location and sponsorId reference"
+        },
+        {
+          "pattern": "interface\\s+Submission\\s*\\{[^}]*mediaURL\\s*:\\s*string",
+          "message": "Submission model must include mediaURL field for Firebase Storage paths"
+        },
+        {
+          "pattern": "interface\\s+LoreCoinTransaction\\s*\\{[^}]*type\\s*:\\s*[\"']earn[\"']\\s*\\|\\s*[\"']redeem[\"'][^}]*description\\s*:\\s*string",
+          "message": "LoreCoinTransaction model must track earn/redeem types with descriptions"
+        },
+        {
+          "pattern": "interface\\s+Sponsor\\s*\\{[^}]*promoCode\\s*:\\s*string",
+          "message": "Sponsor model must include promoCode field for discounts"
+        }
+      ]
+    },
+    {
+      "name": "TypeScript Enforcement",
+      "description": "Enforce TypeScript interfaces for collection schemas",
+      "include": ["**/*.ts", "**/*.tsx"],
+      "patterns": [
+        {
+          "pattern": "interface\\s+[A-Z][A-Za-z]*\\s*\\{",
+          "message": "Use TypeScript interfaces for data models"
+        },
+        {
+          "pattern": ":\\s*string|:\\s*number|:\\s*boolean|:\\s*any|:\\s*unknown|:\\s*[A-Za-z]+\\[\\]|:\\s*Record<|:\\s*Map<",
+          "message": "Apply TypeScript type annotations"
+        },
+        {
+          "pattern": "\"strict\":\\s*true",
+          "include": ["**/tsconfig.json"],
+          "message": "TypeScript should be configured with strict mode"
+        }
+      ]
+    },
+    {
+      "name": "Core Cloud Functions",
+      "description": "Enforce implementation of required Cloud Functions",
+      "include": ["**/functions/**/*.{js,ts}"],
+      "patterns": [
+        {
+          "pattern": "exports\\.createUserProfile|export\\s+const\\s+createUserProfile\\s*=|functions\\.auth\\.user\\(\\)\\.onCreate",
+          "message": "User Management: createUserProfile function on auth trigger must be implemented"
+        },
+        {
+          "pattern": "exports\\.processSubmission|export\\s+const\\s+processSubmission\\s*=",
+          "message": "Challenges: processSubmission function with media validation must be implemented"
+        },
+        {
+          "pattern": "exports\\.awardLoreCoins|export\\s+const\\s+awardLoreCoins\\s*=",
+          "message": "LoreCoins: awardLoreCoins function for daily streaks/rewards must be implemented"
+        },
+        {
+          "pattern": "\\.batch\\(\\)|\\.writeBatch\\(\\)",
+          "message": "Use batch writes for bulk operations (especially for LoreCoin updates)"
+        }
+      ]
+    },
+    {
+      "name": "Third-Party Integration",
+      "description": "Enforce proper usage of external APIs",
+      "include": ["**/*.{js,ts,tsx,dart}"],
+      "exclude": ["**/node_modules/**", "**/build/**", "**/dist/**"],
+      "patterns": [
+        {
+          "pattern": "import\\s+.*\\s+from\\s+['|\"]@google/maps['|\"]|GoogleMapsApiKey|MapsApiKey|new\\s+google\\.maps\\.Geocoder\\(|new\\s+google\\.maps\\.places\\.Autocomplete",
+          "message": "Google Maps API should be used for geocoding/autocomplete"
+        },
+        {
+          "pattern": "import\\s+.*\\s+from\\s+['|\"]stripe['|\"]|new\\s+Stripe\\(|createStripeCustomer|StripeService",
+          "message": "Stripe API should be isolated in a dedicated service (Phase 2)"
+        }
+      ]
+    },
+    {
+      "name": "Security Rules",
+      "description": "Enforce Firebase security rules patterns",
+      "include": ["**/firestore.rules", "**/database.rules.json"],
+      "patterns": [
+        {
+          "pattern": "match\\s+/users/\\{userId\\}\\s*\\{[^}]*allow\\s+write:\\s+if\\s+request\\.auth\\.uid\\s*==\\s*userId",
+          "message": "Users: Allow write only if requester is the user"
+        },
+        {
+          "pattern": "match\\s+/challenges/\\{challengeId\\}\\s*\\{[^}]*allow\\s+create:\\s+if\\s+request\\.auth\\.token\\.isSponsor\\s*==\\s*true",
+          "message": "Challenges: Allow create only if requester is a sponsor"
+        },
+        {
+          "pattern": "match\\s+/submissions/\\{submissionId\\}\\s*\\{[^}]*allow\\s+update:\\s+if\\s+request\\.auth\\.uid\\s*==\\s*resource\\.data\\.userId",
+          "message": "Submissions: Allow update only if requester owns document"
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "description": "Enforce proper authentication practices",
+      "include": ["**/*.{js,ts,tsx,dart}"],
+      "exclude": ["**/node_modules/**", "**/build/**", "**/dist/**"],
+      "patterns": [
+        {
+          "pattern": "GoogleAuthProvider|signInWithPopup|signInWithRedirect|OAuthProvider\\([\"']instagram[\"']|FacebookAuthProvider|EmailAuthProvider",
+          "message": "Support multiple auth providers (Google/Instagram/email)"
+        },
+        {
+          "pattern": "createUserWithEmailAndPassword|signInWithEmailAndPassword",
+          "message": "Implement email/password authentication"
+        },
+        {
+          "pattern": "\\.currentUser|\\.getIdToken|onAuthStateChanged",
+          "message": "Properly manage authentication state"
+        }
+      ]
+    },
+    {
+      "name": "Firebase Configuration",
+      "description": "Enforce proper Firebase configuration settings",
+      "include": ["**/firebase.{js,ts}", "**/firebase.config.{js,ts}", "**/firebase-config.{js,ts}"],
+      "patterns": [
+        {
+          "pattern": "region:\\s*['\"]europe-west2['\"]|region:\\s*['\"]europe-west2-london['\"]",
+          "message": "Firestore Region must be set to europe-west2 (London)"
+        },
+        {
+          "pattern": "storageBucket:|const\\s+storagePath\\s*=\\s*['\"]submissions/\\$\\{userId\\}/",
+          "message": "Storage Paths should follow '/submissions/{userId}/{mediaFile}' pattern"
+        },
+        {
+          "pattern": "\"nodejs\":\\s*\"?18\"?|\"nodejs18\"|\"nodeVersion\":\\s*\"?18\"?",
+          "include": ["**/firebase.json"],
+          "message": "Cloud Functions should use Node.js 18 runtime"
+        }
+      ]
+    },
+    {
+      "name": "CI/CD",
+      "description": "Enforce proper CI/CD configuration",
+      "include": ["**/.github/workflows/*.{yml,yaml}", "**/codemagic.yaml"],
+      "patterns": [
+        {
+          "pattern": "firebase-hosting-pull-request|firebase-hosting-merge|firebase deploy",
+          "include": ["**/.github/workflows/*.{yml,yaml}"],
+          "message": "Use Firebase Hosting with GitHub Actions for web deployment"
+        },
+        {
+          "pattern": "flutter:|flutter_version:|flutter build",
+          "include": ["**/codemagic.yaml"],
+          "message": "Use Codemagic for Flutter mobile builds"
+        },
+        {
+          "pattern": "branches:\\s*\\[\\s*['\"]main['\"]|branches:\\s*\\[\\s*['\"]dev['\"]|branches:\\s*\\[\\s*['\"]feature/",
+          "message": "Enforce branch strategy: main/dev/feature"
+        }
+      ]
+    },
+    {
+      "name": "Firestore Optimization",
+      "description": "Enforce Firestore optimization techniques",
+      "include": ["**/*.{js,ts,tsx,dart}"],
+      "exclude": ["**/node_modules/**", "**/build/**", "**/dist/**"],
+      "patterns": [
+        {
+          "pattern": "\\.where\\(['\"]location['\"]|\\.where\\(['\"]endDate['\"]|\\.orderBy\\(['\"]location['\"]|\\.orderBy\\(['\"]endDate['\"]",
+          "message": "Create composite indexes for location/endDate queries"
+        },
+        {
+          "pattern": "writeBatch\\(|batch\\(\\)|batch\\.set\\(|batch\\.update\\(|batch\\.delete\\(|batch\\.commit\\(\\)",
+          "message": "Use batch writes for bulk operations, especially LoreCoin updates"
+        }
+      ]
+    },
+    {
+      "name": "Caching",
+      "description": "Enforce proper caching strategies",
+      "include": ["**/*.{js,ts,tsx,dart}"],
+      "exclude": ["**/node_modules/**", "**/build/**", "**/dist/**"],
+      "patterns": [
+        {
+          "pattern": "import\\s+.*\\s+from\\s+['|\"]react-query['|\"]|import\\s+.*\\s+from\\s+['|\"]@tanstack/react-query['|\"]|useQuery\\(|useMutation\\(|QueryClient",
+          "include": ["**/web/**/*.{js,ts,tsx}"],
+          "message": "Use React Query for web caching"
+        },
+        {
+          "pattern": "import\\s+'package:flutter_hooks|HookWidget|useState|useEffect",
+          "include": ["**/mobile/**/*.dart"],
+          "message": "Use Flutter Hooks for mobile caching"
+        },
+        {
+          "pattern": "enablePersistence\\(|persistenceEnabled:\\s*true|cacheSizeBytes",
+          "message": "Enable Firestore offline persistence"
+        }
+      ]
+    },
+    {
+      "name": "Testing Requirements",
+      "description": "Enforce testing standards",
+      "include": ["**/*.test.{js,ts}", "**/*.spec.{js,ts}", "**/cypress/**/*.{js,ts}", "**/detox/**/*.{js,ts}"],
+      "patterns": [
+        {
+          "pattern": "describe\\(['\"]Challenge validation|it\\(['\"]validates challenge",
+          "message": "Unit tests for Challenge validation logic required"
+        },
+        {
+          "pattern": "describe\\(['\"]User flow|it\\(['\"]completes the user",
+          "message": "Integration tests for full user flow required"
+        },
+        {
+          "pattern": "cy\\.visit|cy\\.get|cy\\.contains|cy\\.click",
+          "include": ["**/cypress/**/*.{js,ts}"],
+          "message": "Implement Cypress for web integration tests"
+        },
+        {
+          "pattern": "by\\.id|by\\.text|element\\(by|device\\.pressBack",
+          "include": ["**/detox/**/*.{js,ts}"],
+          "message": "Implement Detox for mobile integration tests"
+        }
+      ]
+    },
+    {
+      "name": "Environment Strategy",
+      "description": "Enforce proper environment configuration",
+      "include": ["**/firebase.{js,ts}", "**/environment.{js,ts}", "**/env.{js,ts}"],
+      "patterns": [
+        {
+          "pattern": "projectId:\\s*['\"]lorepin-dev['\"]|FIREBASE_PROJECT_ID:\\s*['\"]lorepin-dev['\"]",
+          "message": "Development: Use lorepin-dev project (test data only)"
+        },
+        {
+          "pattern": "projectId:\\s*['\"]lorepin-staging['\"]|FIREBASE_PROJECT_ID:\\s*['\"]lorepin-staging['\"]",
+          "message": "Staging: Mirror production configuration"
+        },
+        {
+          "pattern": "projectId:\\s*['\"]lorepin-prod['\"]|FIREBASE_PROJECT_ID:\\s*['\"]lorepin-prod['\"]",
+          "message": "Production: Use isolated lorepin-prod project"
+        }
+      ]
+    },
+    {
+      "name": "Rollout Plan",
+      "description": "Enforce proper feature flagging for rollout",
+      "include": ["**/*.{js,ts,tsx,dart}"],
+      "exclude": ["**/node_modules/**", "**/build/**", "**/dist/**"],
+      "patterns": [
+        {
+          "pattern": "isClosedBeta|enabledForBeta|FEATURE_FLAGS|featureEnabled",
+          "message": "Implement feature flags for gradual rollout (closed beta)"
+        },
+        {
+          "pattern": "FirebaseCrashlytics|Crashlytics\\.instance|recordError|recordException",
+          "message": "Implement Crashlytics for real-time error tracking"
+        }
+      ]
+    },
+    {
+      "name": "Cost Controls",
+      "description": "Enforce cost control measures",
+      "include": ["**/firebase.json", "**/storage.rules"],
+      "patterns": [
+        {
+          "pattern": "\"maxInstances\":|\"timeoutSeconds\":|\"minInstances\":|\"maxConcurrentRequests\":",
+          "include": ["**/firebase.json"],
+          "message": "Set Cloud Functions limits to control costs"
+        },
+        {
+          "pattern": "resource\\.size\\s*<\\s*[0-9]+(MB|KB)|resource\\.contentType\\.matches\\('image/|resource\\.contentType\\.matches\\('video/",
+          "include": ["**/storage.rules"],
+          "message": "Limit file sizes and types in Storage Rules"
+        },
+        {
+          "pattern": "lifecycle:\\s*\\{\\s*rule:\\s*\\{\\s*action:\\s*\\{\\s*type:\\s*['\"]Delete['\"]\\s*\\}\\s*,\\s*condition:\\s*\\{\\s*age:\\s*30",
+          "message": "Implement 30-day lifecycle deletion rule for Storage"
+        }
+      ]
+    },
+    {
+      "name": "Fail-Safes",
+      "description": "Enforce error handling and retry logic",
+      "include": ["**/*.{js,ts,tsx,dart}"],
+      "exclude": ["**/node_modules/**", "**/build/**", "**/dist/**"],
+      "patterns": [
+        {
+          "pattern": "exponentialBackoff|setTimeout\\(\\s*retry|retryCount|maxRetries|retryDelay",
+          "message": "Implement exponential backoff for external API calls"
+        },
+        {
+          "pattern": "try\\s*\\{[^}]*\\}\\s*catch\\s*\\([^)]*\\)\\s*\\{",
+          "message": "Implement proper error handling with try/catch blocks"
+        },
+        {
+          "pattern": "recordError|recordException|Crashlytics|FirebaseCrashlytics|reportError",
+          "message": "Report errors to Firebase Crashlytics for real-time tracking"
+        }
+      ]
+    },
+    {
+      "name": "Code Documentation",
+      "description": "Enforce JSDoc for all public methods",
+      "include": ["**/*.{js,ts,tsx}"],
+      "exclude": ["**/node_modules/**", "**/build/**", "**/dist/**"],
+      "patterns": [
+        {
+          "pattern": "/\\*\\*\\s*\\n\\s*\\*[^*]*\\n\\s*\\*/\\s*export\\s+|/\\*\\*\\s*\\n\\s*\\*[^*]*\\n\\s*\\*/\\s*function\\s+|/\\*\\*\\s*\\n\\s*\\*[^*]*\\n\\s*\\*/\\s*const\\s+[a-zA-Z_$][a-zA-Z0-9_$]*\\s*=\\s*function",
+          "message": "JSDoc required for all public methods and functions"
+        },
+        {
+          "pattern": "@param\\s+\\{[^}]*\\}\\s+[a-zA-Z_$][a-zA-Z0-9_$]*|@returns\\s+\\{[^}]*\\}|@throws\\s+\\{[^}]*\\}",
+          "message": "JSDoc should include parameters, return values, and exceptions"
+        }
+      ]
+    },
+    {
+      "name": "API Documentation",
+      "description": "Enforce Swagger for API endpoints",
+      "include": ["**/functions/**/*.{js,ts}"],
+      "patterns": [
+        {
+          "pattern": "@swagger|@openapi|swagger\\.json|swagger\\.yaml|openapi\\.json|openapi\\.yaml",
+          "message": "Document API endpoints with Swagger/OpenAPI"
+        }
+      ]
+    },
+    {
+      "name": "UI Documentation",
+      "description": "Enforce Storybook for UI components",
+      "include": ["**/*.stories.{js,jsx,ts,tsx}", "**/.storybook/**/*.{js,ts}"],
+      "patterns": [
+        {
+          "pattern": "export\\s+default\\s+\\{\\s*title:|storiesOf\\(|Meta<|Story<",
+          "message": "Document UI components with Storybook"
+        }
+      ]
+    }
+  ]
+}
