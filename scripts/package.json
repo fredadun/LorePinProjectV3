@@ -14,7 +14,8 @@
     "help": "node mcp-automation.js help",
     "pull-all": "node pull-all.js",
     "push-all": "node push-all.js",
-    "sync-branches": "node sync-branches.js"
+    "sync-branches": "node sync-branches.js",
+    "push-project": "node push-project.js"
   },
   "keywords": [
     "mcp",
