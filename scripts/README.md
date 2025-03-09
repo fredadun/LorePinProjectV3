@@ -146,3 +146,71 @@ As the project progresses, you may need to:
 - Adjust milestone dates as schedules change
 - Create new issues for additional requirements
 - Update the project board structure based on team feedback
+
+# LorePin Project Scripts
+
+This directory contains utility scripts for managing the LorePin project.
+
+## Branch Management Script
+
+The `branch-management.js` script helps manage the workflow between branches (development, test, and main).
+
+### Prerequisites
+
+- Node.js installed
+- Git installed and configured
+- Repository cloned locally
+
+### Installation
+
+```bash
+cd scripts
+npm install
+```
+
+### Usage
+
+```bash
+node branch-management.js <command>
+```
+
+### Available Commands
+
+- `sync-to-test`: Sync changes from development to test branch
+- `sync-to-main`: Sync changes from test to main branch
+- `sync-all`: Sync changes through all branches (development -> test -> main)
+- `create-pr`: Create pull requests for branch syncing
+- `help`: Show help message
+
+### Examples
+
+```bash
+# Sync development to test
+node branch-management.js sync-to-test
+
+# Sync test to main
+node branch-management.js sync-to-main
+
+# Sync through all branches
+node branch-management.js sync-all
+
+# Create pull requests
+node branch-management.js create-pr
+```
+
+## Workflow Process
+
+The LorePin project uses a simple branching strategy:
+
+1. **Development Branch**: Active development happens here
+2. **Test Branch**: For testing and QA
+3. **Main Branch**: Production-ready code
+
+The typical workflow is:
+
+1. Make changes in the development branch
+2. Create a pull request from development to test
+3. After testing and verification, create a pull request from test to main
+4. Merge to main for production release
+
+The branch management script helps automate this process.
