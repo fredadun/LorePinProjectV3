@@ -20,7 +20,9 @@ mcp login
 
 ## Available Commands
 
-### Pull Latest Changes
+### Basic Operations
+
+#### Pull Latest Changes
 
 Pull the latest changes from a branch:
 
@@ -28,7 +30,7 @@ Pull the latest changes from a branch:
 npm run pull -- --branch=development
 ```
 
-### Push Changes
+#### Push Changes
 
 Push changes to a file:
 
@@ -36,7 +38,7 @@ Push changes to a file:
 npm run push -- --path=src/components/Feature.js --content="export default () => <div>Feature</div>" --message="Add feature component" --branch=development
 ```
 
-### Create and Merge Pull Requests
+#### Create and Merge Pull Requests
 
 Create a pull request:
 
@@ -50,7 +52,7 @@ To automatically merge the pull request after creation:
 npm run merge -- --head=development --base=test --title="Merge development to test" --body="Regular merge" --autoMerge=true
 ```
 
-### Rollback Capabilities
+#### Rollback Capabilities
 
 Rollback an entire branch to a previous commit:
 
@@ -64,7 +66,7 @@ Rollback a specific file to a previous version:
 npm run rollback-file -- --path=src/components/Feature.js --commit=abc1234 --branch=main
 ```
 
-### Monitoring
+#### Monitoring
 
 Monitor the status of branches:
 
@@ -78,12 +80,38 @@ Monitor specific branches:
 npm run monitor -- --branches=development,test,main
 ```
 
-### Deployment Verification
+#### Deployment Verification
 
 Verify a deployment:
 
 ```bash
 npm run verify -- --env=staging
+```
+
+### Bulk Operations
+
+#### Pull All Files
+
+Pull all files from a branch to a local directory:
+
+```bash
+npm run pull-all -- --branch=development --output=../local-copy
+```
+
+#### Push All Files
+
+Push all files from a local directory to a branch:
+
+```bash
+npm run push-all -- --source=../my-code --branch=development --message="Update all project files"
+```
+
+#### Sync Branches
+
+Sync all code from one branch to another:
+
+```bash
+npm run sync-branches -- --source=main --target=development
 ```
 
 ## Scheduled Automation
