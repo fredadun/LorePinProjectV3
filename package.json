@@ -1,0 +1,22 @@
+{
+  "name": "lorepin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run serve",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend/functions && npm run build",
+    "build": "npm run build:frontend && npm run build:backend",
+    "deploy:frontend": "cd frontend && npm run build && firebase deploy --only hosting",
+    "deploy:backend": "cd backend && firebase deploy --only functions,firestore,storage",
+    "deploy": "npm run build && firebase deploy"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "dependencies": {
+    "lorepin": "file:"
+  }
+}
