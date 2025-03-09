@@ -111,3 +111,13 @@ Detailed documentation is available in the `docs` directory:
 ## License
 
 This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
+
+## Branch Structure
+
+The LorePin project uses a simple branching strategy:
+
+- **development**: Active development branch where new features are implemented
+- **test**: Testing branch for QA and verification before production
+- **main**: Production-ready code
+
+Contributors should create feature branches from the development branch and submit pull requests back to development when ready.
