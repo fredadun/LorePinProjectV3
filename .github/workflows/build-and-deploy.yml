@@ -17,22 +17,19 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18.x'
-        cache: 'npm'
+        # Remove the cache option to avoid dependency on lock file
+        # cache: 'npm'
+    
+    - name: Create package-lock.json if it doesn't exist
+      run: |
+        if [ ! -f package-lock.json ]; then
+          echo "Creating package-lock.json..."
+          npm install --package-lock-only
+        fi
     
     - name: Install dependencies
       run: npm install
       
-    - name: Generate package-lock.json if it doesn't exist
-      run: |
-        if [ ! -f package-lock.json ]; then
-          npm install --package-lock-only
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add package-lock.json
-          git commit -m "Add package-lock.json" || echo "No changes to commit"
-          git push || echo "No changes to push"
-        fi
-    
     - name: Lint
       run: npm run lint || echo "No lint script found, skipping"
     
