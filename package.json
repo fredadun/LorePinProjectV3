@@ -1,22 +1,35 @@
 {
-  "name": "lorepin",
-  "version": "0.1.0",
-  "private": true,
+  "name": "lorepin-project",
+  "version": "1.0.0",
+  "description": "LorePin is a location-based challenge platform that connects users with sponsors through engaging challenges and rewards.",
+  "main": "index.js",
   "scripts": {
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev:backend": "cd backend && npm run serve",
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "build:frontend": "cd frontend && npm run build",
-    "build:backend": "cd backend/functions && npm run build",
-    "build": "npm run build:frontend && npm run build:backend",
-    "deploy:frontend": "cd frontend && npm run build && firebase deploy --only hosting",
-    "deploy:backend": "cd backend && firebase deploy --only functions,firestore,storage",
-    "deploy": "npm run build && firebase deploy"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"No build step required at root level\"",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend/functions && npm install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fredadun/LorePinProjectV3.git"
+  },
+  "keywords": [
+    "lorepin",
+    "challenges",
+    "location-based",
+    "firebase"
+  ],
+  "author": "LorePin Team",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fredadun/LorePinProjectV3/issues"
+  },
+  "homepage": "https://github.com/fredadun/LorePinProjectV3#readme",
+  "dependencies": {
+    "firebase": "^10.8.0",
+    "firebase-admin": "^11.11.1",
+    "firebase-functions": "^4.5.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
-  },
-  "dependencies": {
-    "lorepin": "file:"
+    "typescript": "^5.3.3"
   }
 }
