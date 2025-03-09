@@ -36,6 +36,7 @@ The CMS implementation follows a phased approach:
 - [CMS Implementation Plan](./cms-implementation-plan.md): Detailed implementation plan with phased approach
 - [CMS Database Schema](./cms-database-schema.md): PostgreSQL schema design with Row-Level Security
 - [AI-Driven Content Moderation](./cms-ai-moderation.md): Technical design for AI moderation system
+- [CMS UI Mockups](./cms-ui-mockups.md): User interface designs and wireframes for the CMS
 
 ## Related Issues
 
