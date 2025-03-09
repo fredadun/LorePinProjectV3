@@ -1,80 +1,100 @@
-/**
- * Script to pull all files from a branch
- * Usage: node pull-all.js --branch=development --output=../local-copy
- */
-
-const { execSync } = require('child_process');
-const fs = require('fs');
+const { Octokit } = require('@octokit/rest');
+const fs = require('fs-extra');
 const path = require('path');
+require('dotenv').config();
 
 // Parse command line arguments
-const args = {};
-process.argv.slice(2).forEach(arg => {
-  if (arg.startsWith('--')) {
-    const [key, value] = arg.substring(2).split('=');
-    args[key] = value !== undefined ? value : true;
-  }
+const args = process.argv.slice(2);
+const branchArg = args.find(arg => arg.startsWith('--branch='));
+const branch = branchArg ? branchArg.split('=')[1] : 'development';
+
+// Configuration
+const config = {
+  owner: 'fredadun',
+  repo: 'LorePinProjectV3',
+  branch: branch,
+  outputDir: path.resolve(__dirname, '..', 'pulled-files')
+};
+
+console.log(`Pulling files from ${config.owner}/${config.repo} on branch: ${config.branch}`);
+
+// Initialize Octokit with GitHub token from environment
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN
 });
 
-const branch = args.branch || 'development';
-const outputDir = args.output || './output';
-
 // Ensure output directory exists
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
-}
+fs.ensureDirSync(config.outputDir);
 
-console.log(`Pulling all files from ${branch} branch to ${outputDir}...`);
-
-// Get repository contents
-function getContents(path = '') {
+// Function to get repository contents recursively
+async function getRepoContents(path = '') {
   try {
-    const command = `mcp__get_contents --owner="fredadun" --repo="LorePinProjectV3" --path="${path}" --branch="${branch}"`;
-    const result = execSync(command).toString();
-    return JSON.parse(result);
+    const response = await octokit.repos.getContent({
+      owner: config.owner,
+      repo: config.repo,
+      path: path,
+      ref: config.branch
+    });
+
+    if (Array.isArray(response.data)) {
+      // It's a directory, process each item
+      const promises = response.data.map(async item => {
+        if (item.type === 'dir') {
+          // Recursively get contents of subdirectory
+          return getRepoContents(item.path);
+        } else if (item.type === 'file') {
+          // Download file
+          return downloadFile(item.path);
+        }
+      });
+
+      await Promise.all(promises);
+    } else {
+      // It's a single file
+      await downloadFile(path);
+    }
   } catch (error) {
-    console.error(`Error getting contents for ${path}: ${error.message}`);
-    return [];
+    console.error(`Error getting contents for ${path}:`, error.message);
   }
 }
 
-// Download a file
-function downloadFile(filePath) {
+// Function to download a file
+async function downloadFile(filePath) {
   try {
-    const command = `mcp__get_file_contents --owner="fredadun" --repo="LorePinProjectV3" --path="${filePath}" --branch="${branch}"`;
-    const result = execSync(command).toString();
-    const fileContent = JSON.parse(result).content;
+    console.log(`Downloading: ${filePath}`);
     
-    // Create directory structure if needed
-    const fullPath = path.join(outputDir, filePath);
-    const dirName = path.dirname(fullPath);
-    if (!fs.existsSync(dirName)) {
-      fs.mkdirSync(dirName, { recursive: true });
-    }
+    const response = await octokit.repos.getContent({
+      owner: config.owner,
+      repo: config.repo,
+      path: filePath,
+      ref: config.branch
+    });
+
+    const content = Buffer.from(response.data.content, 'base64').toString('utf8');
+    const outputPath = path.join(config.outputDir, filePath);
+    
+    // Ensure directory exists
+    fs.ensureDirSync(path.dirname(outputPath));
     
     // Write file
-    fs.writeFileSync(fullPath, fileContent);
+    fs.writeFileSync(outputPath, content);
     console.log(`Downloaded: ${filePath}`);
   } catch (error) {
-    console.error(`Error downloading ${filePath}: ${error.message}`);
+    console.error(`Error downloading ${filePath}:`, error.message);
   }
 }
 
-// Process directory recursively
-function processDirectory(dirPath = '') {
-  const contents = getContents(dirPath);
-  
-  for (const item of contents) {
-    const itemPath = item.path;
-    
-    if (item.type === 'file') {
-      downloadFile(itemPath);
-    } else if (item.type === 'dir') {
-      processDirectory(itemPath);
-    }
+// Main function to pull all files
+async function pullAllFiles() {
+  try {
+    console.log('Starting to pull all files...');
+    await getRepoContents();
+    console.log(`All files pulled successfully to: ${config.outputDir}`);
+  } catch (error) {
+    console.error('Error pulling files:', error.message);
+    process.exit(1);
   }
 }
 
-// Start processing from root
-processDirectory();
-console.log('Pull complete!');
+// Execute the pull
+pullAllFiles(); 
