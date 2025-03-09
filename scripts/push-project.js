@@ -177,7 +177,7 @@ async function pushFile(file) {
     const response = await octokit.repos.createOrUpdateFileContents({
       owner: config.owner,
       repo: config.repo,
-      path: file.path,
+      path: file.path.replace(/\\/g, '/'), // Convert Windows backslashes to forward slashes
       message: `Update ${file.path}`,
       content: Buffer.from(file.content).toString('base64'),
       branch: config.branch,
