@@ -11,7 +11,10 @@
     "rollback-file": "node mcp-automation.js rollback-file",
     "monitor": "node mcp-automation.js monitor",
     "verify": "node mcp-automation.js verify",
-    "help": "node mcp-automation.js help"
+    "help": "node mcp-automation.js help",
+    "pull-all": "node pull-all.js",
+    "push-all": "node push-all.js",
+    "sync-branches": "node sync-branches.js"
   },
   "keywords": [
     "mcp",
