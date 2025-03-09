@@ -55,22 +55,10 @@ The project is organized into the following main directories:
 
 ## Development Workflow
 
-1. Always work on feature branches:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. Commit changes with descriptive messages:
-   ```bash
-   git commit -m "Add feature: description of changes"
-   ```
-
-3. Push changes to the development branch:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-4. Create a pull request to merge into the development branch
+1. Follow the [Branching Workflow Guide](docs/BranchingWorkflow.md) for all code changes
+2. Always work on feature branches created from the development branch
+3. Use pull requests for code review and merging
+4. Follow the progression: development → test → main
 
 ## Automation Scripts
 
