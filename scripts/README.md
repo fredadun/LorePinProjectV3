@@ -45,7 +45,12 @@ This directory contains automation scripts for the LorePin project to help with 
   npm run pull-example
   ```
 
-### Branch Management
+### Repository Management
+
+- **check-repo-structure.js**: Check the repository structure for issues
+  ```bash
+  npm run check-repo
+  ```
 
 - **sync-branches.js**: Synchronize branches (e.g., development to main)
   ```bash
