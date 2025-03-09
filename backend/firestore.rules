@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profiles
+    match /users/{userId} {
+      allow read;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+      
+      // User's private data
+      match /private/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Challenges
+    match /challenges/{challengeId} {
+      allow read;
+      allow create: if request.auth != null && 
+                     (request.auth.token.isSponsor == true || 
+                      request.auth.token.isAdmin == true);
+      allow update: if request.auth != null && 
+                     (request.auth.uid == resource.data.creatorId || 
+                      request.auth.token.isAdmin == true);
+      allow delete: if request.auth != null && 
+                     (request.auth.uid == resource.data.creatorId || 
+                      request.auth.token.isAdmin == true);
+    }
+    
+    // Submissions
+    match /submissions/{submissionId} {
+      allow read;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && 
+                     (request.auth.uid == resource.data.userId || 
+                      request.auth.token.isAdmin == true);
+      allow delete: if request.auth != null && 
+                     (request.auth.uid == resource.data.userId || 
+                      request.auth.token.isAdmin == true);
+    }
+    
+    // LoreCoin transactions
+    match /lorecoin_transactions/{transactionId} {
+      allow read: if request.auth != null && 
+                   (request.auth.uid == resource.data.userId || 
+                    request.auth.token.isAdmin == true);
+      allow create: if request.auth != null && 
+                     (request.auth.uid == request.resource.data.userId || 
+                      request.auth.token.isAdmin == true);
+      allow update, delete: if request.auth != null && 
+                             request.auth.token.isAdmin == true;
+    }
+    
+    // Sponsors
+    match /sponsors/{sponsorId} {
+      allow read;
+      allow create, update, delete: if request.auth != null && 
+                                     (request.auth.uid == sponsorId || 
+                                      request.auth.token.isAdmin == true);
+    }
+  }
+} 
