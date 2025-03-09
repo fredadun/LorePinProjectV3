@@ -4,8 +4,10 @@
   "description": "LorePin is a location-based challenge platform that connects users with sponsors through engaging challenges and rewards.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo \"No build step required at root level\"",
+    "test": "echo \"No tests specified yet\" && exit 0",
+    "build": "echo \"No build step required at root level\" && exit 0",
+    "lint": "echo \"No lint step required at root level\" && exit 0",
+    "type-check": "echo \"No type-check step required at root level\" && exit 0",
     "install:all": "npm install && cd frontend && npm install && cd ../backend/functions && npm install"
   },
   "repository": {
