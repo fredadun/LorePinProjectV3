@@ -1,6 +1,20 @@
-# LorePin Project Scripts
+# LorePin Project Management Scripts
 
-This directory contains automation scripts for the LorePin project to help with GitHub repository management.
+This directory contains scripts for setting up and managing the project management infrastructure for the LorePin project in GitHub.
+
+## Overview
+
+These scripts automate the setup of:
+- GitHub Milestones for sprints
+- GitHub Labels for categorizing issues
+- GitHub Project Board for tracking progress
+- GitHub Issues for user stories and checkpoints
+
+## Prerequisites
+
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+- GitHub Personal Access Token with repo scope
 
 ## Setup
 
@@ -9,94 +23,126 @@ This directory contains automation scripts for the LorePin project to help with 
    npm install
    ```
 
-2. Create a `.env` file in the `scripts` directory with your GitHub token:
+2. Create a `.env` file in this directory with your GitHub token:
    ```
    GITHUB_TOKEN=your_github_token_here
    ```
 
-## Available Scripts
+## Usage
 
-### Push Scripts
+### Complete Setup
 
-- **push-project.js**: Push the entire project structure to GitHub
-  ```bash
-  npm run push-project -- --branch=development
-  ```
+To run the complete setup process:
 
-- **push-all.js**: Push all files in a specified directory
-  ```bash
-  npm run push-all
-  ```
-
-- **push-single-file.js**: Push a single file to GitHub
-  ```bash
-  node push-single-file.js path/to/file.js
-  ```
-
-### Pull Scripts
-
-- **pull-all.js**: Pull all files from the repository
-  ```bash
-  npm run pull-all -- --branch=development
-  ```
-
-- **pull-example.js**: Pull specific example files
-  ```bash
-  npm run pull-example
-  ```
-
-### Repository Management
-
-- **check-repo-structure.js**: Check the repository structure for issues
-  ```bash
-  npm run check-repo
-  ```
-
-- **sync-branches.js**: Synchronize branches (e.g., development to main)
-  ```bash
-  npm run sync-branches
-  ```
-
-### Shell Scripts
-
-- **check-sensitive-files.sh**: Check for sensitive files before committing
-- **checkout-dev.sh**: Checkout the development branch
-- **commit-changes.sh**: Commit changes with a message
-- **feature-branch.sh**: Create a new feature branch
-- **git-aliases.sh**: Set up Git aliases
-- **init-repo.sh**: Initialize the repository
-- **setup-scripts.sh**: Set up the scripts environment
-- **update-code.sh**: Update code from the remote repository
-
-## Path Handling
-
-All scripts have been updated to handle Windows backslashes correctly by converting them to forward slashes when pushing to GitHub:
-
-```javascript
-path: filePath.replace(/\\\\/g, '/') // Convert Windows backslashes to forward slashes
+```bash
+npm run setup
 ```
 
-## Security
+This will:
+1. Create milestones for all sprints
+2. Create labels for categorizing issues
+3. Create a project board with columns
+4. Create issues for all user stories and checkpoints
 
-- Never hardcode GitHub tokens in scripts
-- Always use environment variables for sensitive information
-- The `.env` file is excluded from being pushed to GitHub
+### Individual Scripts
+
+You can also run each script individually:
+
+```bash
+# Create milestones
+npm run create-milestones
+
+# Create labels
+npm run create-labels
+
+# Create project board
+npm run create-project-board
+
+# Create issues
+npm run create-issues
+```
+
+## Script Details
+
+### create-milestones.js
+
+Creates six milestones representing the sprints for the LorePin project:
+- Sprint 1: User Onboarding & Profiles
+- Sprint 2: Challenge System (Core)
+- Sprint 3: LoreCoins Reward System
+- Sprint 4: Content Discovery & Feed
+- Sprint 5: Social Features & Sponsor Tools
+- Sprint 6: Testing & Launch Prep
+
+### create-labels.js
+
+Creates labels for categorizing issues:
+- Priority labels (high, medium, low)
+- Type labels (feature, bug, documentation, etc.)
+- Component labels (frontend, backend, mobile, etc.)
+- Status labels (blocked, in-progress, review, etc.)
+- Sprint labels (sprint:1, sprint:2, etc.)
+
+### create-project-board.js
+
+Creates a Kanban-style project board with columns:
+- Backlog
+- To Do
+- In Progress
+- Review
+- Done
+
+### create-issues.js
+
+Creates GitHub issues for all user stories and checkpoints defined in the Sprint1-UserStories.md through Sprint6-UserStories.md files.
+
+## Customization
+
+You can customize the scripts by modifying the configuration at the top of each file:
+
+```javascript
+// Configuration
+const config = {
+  owner: 'fredadun',
+  repo: 'LorePinProjectV3',
+  // Other configuration options...
+};
+```
 
 ## Troubleshooting
 
-If you encounter GitHub API rate limits:
-1. Make sure you're using a personal access token with appropriate permissions
-2. Add delays between API calls (most scripts already include this)
-3. Consider using conditional requests with ETags
+### Rate Limiting
 
-For authentication issues:
-1. Check that your `.env` file exists and contains a valid token
-2. Ensure the token has the necessary permissions (repo scope)
-3. Verify the token hasn't expired
+If you encounter rate limiting issues, the scripts will output error messages. Wait for the rate limit to reset and try again.
 
-## Contributing
+### Authentication Issues
 
-When adding new scripts:
-1. Follow the existing pattern for error handling and logging
-2. Add documentation in this README
-3. Update the package.json scripts section if needed
+If you see authentication errors, check that:
+- Your GitHub token is correct
+- Your token has the necessary permissions (repo scope)
+- The token is properly set in the .env file
+
+### File Path Issues
+
+If the scripts can't find the user story files, check that the paths in the configuration are correct.
+
+## Next Steps After Setup
+
+After running the setup scripts:
+
+1. **Assign Team Members**: Assign issues to team members based on their roles and expertise.
+
+2. **Schedule Sprints**: Set specific dates for each sprint and update the milestones accordingly.
+
+3. **Conduct Sprint Planning**: Use the SprintPlanningProcess.md guide to conduct the first sprint planning meeting.
+
+4. **Start Development**: Begin working on the issues in the first sprint.
+
+## Maintenance
+
+As the project progresses, you may need to:
+
+- Create new labels for emerging categories
+- Adjust milestone dates as schedules change
+- Create new issues for additional requirements
+- Update the project board structure based on team feedback
