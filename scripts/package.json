@@ -1,22 +1,19 @@
 {
-  "name": "lorepin-scripts",
+  "name": "lorepin-project-management-scripts",
   "version": "1.0.0",
-  "description": "Automation scripts for LorePin project",
-  "main": "index.js",
+  "description": "Scripts for setting up project management for LorePin",
+  "main": "setup-project-management.js",
   "scripts": {
-    "push-project": "node push-project.js",
-    "pull-all": "node pull-all.js",
-    "push-all": "node push-all.js",
-    "sync-branches": "node sync-branches.js",
-    "pull-example": "node pull-example.js",
-    "check-repo": "node check-repo-structure.js",
-    "push-package-lock": "node push-package-lock.js"
+    "setup": "node setup-project-management.js",
+    "create-milestones": "node create-milestones.js",
+    "create-labels": "node create-labels.js",
+    "create-project-board": "node create-project-board.js",
+    "create-issues": "node create-issues.js"
   },
   "author": "LorePin Team",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "@octokit/rest": "^19.0.13",
-    "dotenv": "^16.4.7",
-    "fs-extra": "^11.3.0"
+    "@octokit/rest": "^19.0.7",
+    "dotenv": "^16.0.3"
   }
 }
