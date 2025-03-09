@@ -1,0 +1,20 @@
+{
+  "name": "lorepin-scripts",
+  "version": "1.0.0",
+  "description": "Automation scripts for LorePin project",
+  "main": "index.js",
+  "scripts": {
+    "push-project": "node push-project.js",
+    "pull-all": "node pull-all.js",
+    "push-all": "node push-all.js",
+    "sync-branches": "node sync-branches.js",
+    "pull-example": "node pull-example.js"
+  },
+  "author": "LorePin Team",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/rest": "^19.0.13",
+    "dotenv": "^16.4.7",
+    "fs-extra": "^11.3.0"
+  }
+}
