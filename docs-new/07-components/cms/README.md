@@ -32,11 +32,13 @@ The CMS implementation follows a phased approach:
 
 ## Documentation
 
-- [CMS Specifications](./cms-specifications.md): Comprehensive specifications for the CMS v2.0
-- [CMS Implementation Plan](./cms-implementation-plan.md): Detailed implementation plan with phased approach
-- [CMS Database Schema](./cms-database-schema.md): PostgreSQL schema design with Row-Level Security
-- [AI-Driven Content Moderation](./cms-ai-moderation.md): Technical design for AI moderation system
-- [CMS UI Mockups](./cms-ui-mockups.md): User interface designs and wireframes for the CMS
+- [CMS Specifications](./cms-specifications.md) - Detailed requirements and specifications for the CMS
+- [CMS Implementation Plan](./cms-implementation-plan.md) - Step-by-step plan for implementing the CMS
+- [CMS Database Schema](./cms-database-schema.md) - Database schema design for the CMS
+- [AI-Driven Content Moderation](./cms-ai-moderation.md) - AI-driven content moderation system design
+- [CMS UI Mockups](./cms-ui-mockups.md) - UI mockups for the CMS
+- [Implementation Progress](./implementation-progress.md) - Current implementation progress and next steps
+- [Next Phase Plan](./next-phase-plan.md) - Detailed plan for the next implementation phase
 
 ## Related Issues
 
