@@ -1,0 +1,8 @@
+# Add Git to PATH if it's not already there
+$gitPath = "C:\Program Files\Git\cmd"
+if ($env:Path -notlike "*$gitPath*") {
+    $env:Path += ";$gitPath"
+}
+
+# Source the git aliases
+. "C:\Users\freda\Project\LorePinProjectV3\scripts\git-aliases.ps1"
