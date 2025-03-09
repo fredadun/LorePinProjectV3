@@ -12,6 +12,7 @@ The project is organized into the following main directories:
   - **firestore**: Firestore database configuration
   - **storage**: Firebase Storage rules
 - **mobile**: Flutter-based mobile application
+- **cms**: Content Management System (post-MVP)
 - **docs**: Project documentation
 - **scripts**: Automation scripts for development
 
@@ -72,12 +73,14 @@ The project includes various automation scripts to help with development. See th
 - LoreCoin rewards system
 - Sponsor management
 - User profiles and skills
+- Advanced CMS for content moderation and management (post-MVP)
 
 ## Architecture
 
 - **Frontend**: React with Redux for state management
 - **Backend**: Firebase (Auth, Firestore, Functions, Storage)
 - **Mobile**: Flutter with Riverpod for state management
+- **CMS**: React Admin, NestJS, PostgreSQL (post-MVP)
 
 ## Documentation
 
@@ -88,6 +91,7 @@ Detailed documentation is available in the `docs` directory:
 - [API Documentation](docs/APIDocumentation.md)
 - [Mobile Architecture](docs/MobileArchitecture.md)
 - [Improvement Roadmap](docs/ImprovementRoadmap.md)
+- [CMS Specifications](docs/CMSSpecifications.md)
 
 ## Contributing
 
