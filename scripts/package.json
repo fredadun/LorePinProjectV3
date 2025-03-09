@@ -1,36 +1,20 @@
 {
-  "name": "lorepin-mcp-automation",
+  "name": "lorepin-scripts",
   "version": "1.0.0",
-  "description": "MCP Server automation scripts for LorePin CI/CD",
-  "main": "mcp-automation.js",
+  "description": "Automation scripts for LorePin project",
+  "main": "index.js",
   "scripts": {
-    "pull": "node mcp-automation.js pull",
-    "push": "node mcp-automation.js push",
-    "merge": "node mcp-automation.js merge",
-    "rollback": "node mcp-automation.js rollback",
-    "rollback-file": "node mcp-automation.js rollback-file",
-    "monitor": "node mcp-automation.js monitor",
-    "verify": "node mcp-automation.js verify",
-    "help": "node mcp-automation.js help",
+    "push-project": "node push-project.js",
     "pull-all": "node pull-all.js",
     "push-all": "node push-all.js",
     "sync-branches": "node sync-branches.js",
-    "push-project": "node push-project.js",
     "pull-example": "node pull-example.js"
   },
-  "keywords": [
-    "mcp",
-    "automation",
-    "ci-cd",
-    "lorepin"
-  ],
   "author": "LorePin Team",
-  "license": "MIT",
+  "license": "ISC",
   "dependencies": {
-    "axios": "^1.6.2",
-    "node-cron": "^3.0.2"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "@octokit/rest": "^19.0.13",
+    "dotenv": "^16.4.7",
+    "fs-extra": "^11.3.0"
   }
 }
