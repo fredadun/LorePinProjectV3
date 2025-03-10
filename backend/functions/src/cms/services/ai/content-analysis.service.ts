@@ -1,3 +1,4 @@
+import * as functions from 'firebase-functions';
 import { OpenAIService, TextAnalysisResult } from './openai.service';
 import { VisionService, ImageAnalysisResult } from './vision.service';
 import { RekognitionService, VideoAnalysisResult } from './rekognition.service';
@@ -13,6 +14,8 @@ export interface ContentAnalysisResult {
   flagged: boolean;
   flagged_categories: string[];
   timestamp: string;
+  analysis_id?: string; // Unique ID for tracking analysis
+  error?: string;
 }
 
 /**
@@ -27,6 +30,8 @@ export class ContentAnalysisService {
     this.openaiService = new OpenAIService();
     this.visionService = new VisionService();
     this.rekognitionService = new RekognitionService();
+    
+    console.log('Content Analysis Service initialized');
   }
 
   /**
@@ -39,57 +44,79 @@ export class ContentAnalysisService {
     image_url?: string;
     video_url?: string;
   }): Promise<ContentAnalysisResult> {
+    // Generate a unique analysis ID
+    const analysisId = this.generateAnalysisId();
+    
+    console.log(`Starting content analysis (ID: ${analysisId})`);
+    
     const result: ContentAnalysisResult = {
       risk_score: 0,
       flagged: false,
       flagged_categories: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      analysis_id: analysisId
     };
     
-    // Analyze text content if provided
-    if (data.text) {
-      result.text_analysis = await this.openaiService.analyzeText(data.text);
-    }
-    
-    // Analyze image content if provided
-    if (data.image_url) {
-      result.image_analysis = await this.visionService.analyzeImage(data.image_url);
-    }
-    
-    // Start video analysis if provided (async process)
-    if (data.video_url) {
-      try {
-        const jobId = await this.rekognitionService.startVideoModeration(data.video_url);
-        result.video_analysis = {
-          job_id: jobId,
-          status: 'IN_PROGRESS',
-          moderation_labels: [],
-          nsfw_detected: false,
-          violence_detected: false,
-          highest_nsfw_confidence: 0,
-          highest_violence_confidence: 0
-        };
-      } catch (error: any) {
-        console.error('Error starting video analysis:', error);
-        result.video_analysis = {
-          job_id: 'error',
-          status: 'FAILED',
-          moderation_labels: [],
-          nsfw_detected: false,
-          violence_detected: false,
-          highest_nsfw_confidence: 0,
-          highest_violence_confidence: 0,
-          error: error.message
-        };
+    try {
+      // Analyze text content if provided
+      if (data.text) {
+        console.log(`Analyzing text content (ID: ${analysisId})`);
+        result.text_analysis = await this.openaiService.analyzeText(data.text);
+        console.log(`Text analysis complete (ID: ${analysisId})`);
       }
+      
+      // Analyze image content if provided
+      if (data.image_url) {
+        console.log(`Analyzing image content (ID: ${analysisId})`);
+        result.image_analysis = await this.visionService.analyzeImage(data.image_url);
+        console.log(`Image analysis complete (ID: ${analysisId})`);
+      }
+      
+      // Start video analysis if provided (async process)
+      if (data.video_url) {
+        console.log(`Starting video analysis (ID: ${analysisId})`);
+        try {
+          const jobId = await this.rekognitionService.startVideoModeration(data.video_url);
+          result.video_analysis = {
+            job_id: jobId,
+            status: 'IN_PROGRESS',
+            moderation_labels: [],
+            nsfw_detected: false,
+            violence_detected: false,
+            highest_nsfw_confidence: 0,
+            highest_violence_confidence: 0
+          };
+          console.log(`Video analysis job started (ID: ${analysisId}, Job ID: ${jobId})`);
+        } catch (error: any) {
+          console.error(`Error starting video analysis (ID: ${analysisId}):`, error);
+          result.video_analysis = {
+            job_id: 'error',
+            status: 'FAILED',
+            moderation_labels: [],
+            nsfw_detected: false,
+            violence_detected: false,
+            highest_nsfw_confidence: 0,
+            highest_violence_confidence: 0,
+            error: error.message
+          };
+        }
+      }
+      
+      // Calculate overall risk score and flagged status
+      result.risk_score = this.calculateRiskScore(result);
+      result.flagged = this.determineIfFlagged(result);
+      result.flagged_categories = this.getFlaggedCategories(result);
+      
+      console.log(`Content analysis complete (ID: ${analysisId}, Risk Score: ${result.risk_score}, Flagged: ${result.flagged})`);
+      
+      return result;
+    } catch (error: any) {
+      console.error(`Error during content analysis (ID: ${analysisId}):`, error);
+      
+      // Return partial result with error
+      result.error = `Analysis error: ${error.message}`;
+      return result;
     }
-    
-    // Calculate overall risk score and flagged status
-    result.risk_score = this.calculateRiskScore(result);
-    result.flagged = this.determineIfFlagged(result);
-    result.flagged_categories = this.getFlaggedCategories(result);
-    
-    return result;
   }
 
   /**
@@ -98,7 +125,25 @@ export class ContentAnalysisService {
    * @returns The updated content analysis result
    */
   public async getVideoAnalysisResults(jobId: string): Promise<VideoAnalysisResult> {
-    return this.rekognitionService.getVideoModerationResults(jobId);
+    console.log(`Getting video analysis results for job: ${jobId}`);
+    
+    try {
+      const result = await this.rekognitionService.getVideoModerationResults(jobId);
+      console.log(`Video analysis status: ${result.status}`);
+      return result;
+    } catch (error: any) {
+      console.error(`Error getting video analysis results for job ${jobId}:`, error);
+      return {
+        job_id: jobId,
+        status: 'FAILED',
+        moderation_labels: [],
+        nsfw_detected: false,
+        violence_detected: false,
+        highest_nsfw_confidence: 0,
+        highest_violence_confidence: 0,
+        error: error.message
+      };
+    }
   }
 
   /**
@@ -111,6 +156,8 @@ export class ContentAnalysisService {
     analysis: ContentAnalysisResult,
     videoAnalysis: VideoAnalysisResult
   ): ContentAnalysisResult {
+    console.log(`Updating analysis with video results (Analysis ID: ${analysis.analysis_id})`);
+    
     const updatedAnalysis = { ...analysis };
     updatedAnalysis.video_analysis = videoAnalysis;
     
@@ -119,7 +166,17 @@ export class ContentAnalysisService {
     updatedAnalysis.flagged = this.determineIfFlagged(updatedAnalysis);
     updatedAnalysis.flagged_categories = this.getFlaggedCategories(updatedAnalysis);
     
+    console.log(`Updated risk score: ${updatedAnalysis.risk_score}, Flagged: ${updatedAnalysis.flagged}`);
+    
     return updatedAnalysis;
+  }
+
+  /**
+   * Generate a unique analysis ID
+   * @returns A unique ID
+   */
+  private generateAnalysisId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
   }
 
   /**

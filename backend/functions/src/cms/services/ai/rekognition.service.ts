@@ -1,7 +1,9 @@
 // @ts-nocheck - Disable TypeScript checking for this file temporarily
 import * as functions from 'firebase-functions';
-import { Rekognition } from 'aws-sdk';
+import { Rekognition, S3 } from 'aws-sdk';
 import { Redis } from 'ioredis';
+import axios from 'axios';
+import * as crypto from 'crypto';
 
 /**
  * Interface for video analysis result
@@ -28,21 +30,37 @@ export interface VideoAnalysisResult {
  */
 export class RekognitionService {
   private client: Rekognition | null = null;
+  private s3Client: S3 | null = null;
   private redis: Redis | null = null;
   private requestsPerMinute: number = 20; // Default rate limit
   private tokenBucket: { tokens: number; lastRefill: number } = { tokens: this.requestsPerMinute, lastRefill: Date.now() };
+  private s3Bucket: string;
 
   constructor() {
+    // Get AWS configuration
+    const region = functions.config().aws?.region || process.env.AWS_REGION || 'us-east-1';
+    const accessKeyId = functions.config().aws?.access_key_id || process.env.AWS_ACCESS_KEY_ID;
+    const secretAccessKey = functions.config().aws?.secret_access_key || process.env.AWS_SECRET_ACCESS_KEY;
+    this.s3Bucket = functions.config().aws?.s3_bucket || process.env.AWS_S3_BUCKET || 'lorepin-content-moderation';
+
     try {
       // Initialize Rekognition client
       this.client = new Rekognition({
-        region: functions.config().aws?.region || process.env.AWS_REGION || 'us-east-1',
-        accessKeyId: functions.config().aws?.access_key_id || process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: functions.config().aws?.secret_access_key || process.env.AWS_SECRET_ACCESS_KEY
+        region,
+        accessKeyId,
+        secretAccessKey
       });
       console.log('AWS Rekognition client initialized');
+
+      // Initialize S3 client
+      this.s3Client = new S3({
+        region,
+        accessKeyId,
+        secretAccessKey
+      });
+      console.log('AWS S3 client initialized');
     } catch (error) {
-      console.error('Error initializing AWS Rekognition client:', error);
+      console.error('Error initializing AWS clients:', error);
       console.warn('Rekognition service will use fallback implementation');
     }
 
@@ -80,34 +98,42 @@ export class RekognitionService {
       return 'rate-limited';
     }
 
-    // If client is not initialized, use fallback implementation
-    if (!this.client) {
-      console.warn('AWS Rekognition client not initialized. Using fallback implementation.');
+    // If clients are not initialized, use fallback implementation
+    if (!this.client || !this.s3Client) {
+      console.warn('AWS clients not initialized. Using fallback implementation.');
       return 'mock-job-id';
     }
 
     try {
-      // TODO: Implement actual AWS Rekognition API integration
-      // There are TypeScript issues with the current implementation
-      // For now, we'll use the fallback implementation
-      // In a production environment, we would properly handle the client initialization
-      // and API calls with proper type checking
+      // First, we need to download the video and upload it to S3
+      // Rekognition requires videos to be in S3
+      const videoKey = await this.uploadVideoToS3(videoUrl);
       
-      // For reference, the implementation would look something like this:
-      // const params = {
-      //   Video: {
-      //     S3Object: {
-      //       Bucket: 'your-bucket-name',
-      //       Name: this.getS3KeyFromUrl(videoUrl)
-      //     }
-      //   },
-      //   MinConfidence: 50
-      // };
-      // const response = await this.client.startContentModeration(params).promise();
-      // return response.JobId || 'unknown-job-id';
+      if (!videoKey) {
+        console.error('Failed to upload video to S3');
+        return 'upload-failed';
+      }
       
-      // For now, return a mock job ID
-      return 'mock-job-id';
+      // Now start the content moderation job
+      const params = {
+        Video: {
+          S3Object: {
+            Bucket: this.s3Bucket,
+            Name: videoKey
+          }
+        },
+        MinConfidence: 50 // Only return labels with at least 50% confidence
+      };
+      
+      const response = await this.client.startContentModeration(params).promise();
+      const jobId = response.JobId || 'unknown-job-id';
+      
+      // Store the S3 key with the job ID for cleanup later
+      if (this.redis) {
+        await this.redis.set(`rekognition:s3key:${jobId}`, videoKey, 'EX', 604800); // 7 days TTL
+      }
+      
+      return jobId;
     } catch (error) {
       console.error('Error starting video moderation job:', error);
       return 'error-job-id';
@@ -121,13 +147,13 @@ export class RekognitionService {
    */
   public async getVideoModerationResults(jobId: string): Promise<VideoAnalysisResult> {
     // Check if job ID is valid
-    if (!jobId || jobId === 'invalid-url' || jobId === 'rate-limited' || jobId === 'error-job-id') {
+    if (!jobId || jobId === 'invalid-url' || jobId === 'rate-limited' || jobId === 'error-job-id' || jobId === 'upload-failed') {
       return this.getErrorResult(jobId);
     }
 
     // Try to get from cache first
     const cachedResult = await this.getCachedResult(jobId);
-    if (cachedResult) {
+    if (cachedResult && cachedResult.status !== 'IN_PROGRESS') {
       return cachedResult;
     }
 
@@ -144,24 +170,24 @@ export class RekognitionService {
     }
 
     try {
-      // TODO: Implement actual AWS Rekognition API integration
-      // There are TypeScript issues with the current implementation
-      // For now, we'll use the fallback implementation
-      // In a production environment, we would properly handle the client initialization
-      // and API calls with proper type checking
+      // Get the content moderation results
+      const params = {
+        JobId: jobId,
+        SortBy: 'TIMESTAMP'
+      };
       
-      // For reference, the implementation would look something like this:
-      // const params = {
-      //   JobId: jobId,
-      //   SortBy: 'TIMESTAMP'
-      // };
-      // const response = await this.client.getContentModeration(params).promise();
-      // const result = this.processApiResponse(response);
-      // await this.cacheResult(jobId, result);
-      // return result;
+      const response = await this.client.getContentModeration(params).promise();
+      const result = this.processApiResponse(response);
       
-      // For now, return a mock result
-      return this.getMockResult(jobId);
+      // Cache the result
+      await this.cacheResult(jobId, result);
+      
+      // If the job is complete, clean up the S3 object
+      if (result.status === 'SUCCEEDED' || result.status === 'FAILED') {
+        await this.cleanupS3Object(jobId);
+      }
+      
+      return result;
     } catch (error) {
       console.error('Error getting video moderation results:', error);
       return {
@@ -178,12 +204,111 @@ export class RekognitionService {
   }
 
   /**
+   * Upload video to S3 bucket
+   * @param videoUrl The URL of the video
+   * @returns The S3 key of the uploaded video
+   */
+  private async uploadVideoToS3(videoUrl: string): Promise<string | null> {
+    if (!this.s3Client) {
+      return null;
+    }
+    
+    try {
+      // Download the video
+      const videoData = await this.downloadVideo(videoUrl);
+      
+      // Generate a unique key for the video
+      const fileExtension = this.getFileExtension(videoUrl);
+      const videoKey = `uploads/${crypto.randomUUID()}.${fileExtension}`;
+      
+      // Upload to S3
+      await this.s3Client.putObject({
+        Bucket: this.s3Bucket,
+        Key: videoKey,
+        Body: videoData,
+        ContentType: `video/${fileExtension}`
+      }).promise();
+      
+      return videoKey;
+    } catch (error) {
+      console.error('Error uploading video to S3:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Download video data from URL
+   * @param url The video URL
+   * @returns The video data as Buffer
+   */
+  private async downloadVideo(url: string): Promise<Buffer> {
+    const response = await axios.get(url, {
+      responseType: 'arraybuffer',
+      timeout: 30000 // 30 second timeout for videos
+    });
+    
+    return Buffer.from(response.data, 'binary');
+  }
+
+  /**
+   * Get file extension from URL
+   * @param url The URL
+   * @returns The file extension
+   */
+  private getFileExtension(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      const lastDotIndex = pathname.lastIndexOf('.');
+      
+      if (lastDotIndex !== -1) {
+        return pathname.substring(lastDotIndex + 1).toLowerCase();
+      }
+    } catch (error) {
+      console.error('Error parsing URL:', error);
+    }
+    
+    // Default to mp4 if extension can't be determined
+    return 'mp4';
+  }
+
+  /**
+   * Clean up S3 object after job is complete
+   * @param jobId The job ID
+   */
+  private async cleanupS3Object(jobId: string): Promise<void> {
+    if (!this.s3Client || !this.redis) {
+      return;
+    }
+    
+    try {
+      // Get the S3 key associated with this job
+      const videoKey = await this.redis.get(`rekognition:s3key:${jobId}`);
+      
+      if (!videoKey) {
+        return;
+      }
+      
+      // Delete the object from S3
+      await this.s3Client.deleteObject({
+        Bucket: this.s3Bucket,
+        Key: videoKey
+      }).promise();
+      
+      // Delete the key from Redis
+      await this.redis.del(`rekognition:s3key:${jobId}`);
+      
+      console.log(`Cleaned up S3 object for job ${jobId}`);
+    } catch (error) {
+      console.error('Error cleaning up S3 object:', error);
+    }
+  }
+
+  /**
    * Process the AWS Rekognition API response
-   * This is currently unused but will be implemented in the future
    * @param response The API response
    * @returns The processed analysis result
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private processApiResponse(response: any): VideoAnalysisResult {
     // Check if the job is still in progress
     if (response.JobStatus === 'IN_PROGRESS') {
@@ -421,6 +546,8 @@ export class RekognitionService {
       errorMessage = 'Rate limit exceeded for AWS Rekognition API';
     } else if (jobId === 'error-job-id') {
       errorMessage = 'Error starting video moderation job';
+    } else if (jobId === 'upload-failed') {
+      errorMessage = 'Failed to upload video to S3';
     }
     
     return {

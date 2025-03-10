@@ -2,6 +2,7 @@
 import * as functions from 'firebase-functions';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { Redis } from 'ioredis';
+import axios from 'axios';
 
 /**
  * Interface for image analysis result
@@ -37,6 +38,7 @@ export class VisionService {
   constructor() {
     try {
       // Initialize Vision client
+      // Google Cloud client libraries automatically use the credentials from the environment
       this.client = new ImageAnnotatorClient();
       console.log('Google Vision client initialized');
     } catch (error) {
@@ -86,25 +88,45 @@ export class VisionService {
 
     // If client is not initialized, use fallback implementation
     if (!this.client) {
+      console.warn('Google Vision client not initialized. Using fallback implementation.');
       return this.useFallbackAnalysis(imageUrl);
     }
 
     try {
-      // TODO: Implement actual Google Vision API integration
-      // There are TypeScript issues with the current implementation
-      // For now, we'll use the fallback implementation
-      // In a production environment, we would properly handle the client initialization
-      // and API calls with proper type checking
+      // Download image data or use URL directly
+      let imageData;
+      try {
+        // For public URLs, we can pass the URL directly to the Vision API
+        if (imageUrl.startsWith('gs://') || imageUrl.startsWith('https://storage.googleapis.com/')) {
+          // For Google Cloud Storage URLs, we can pass them directly
+          imageData = imageUrl;
+        } else {
+          // For other URLs, download the image first
+          imageData = await this.downloadImage(imageUrl);
+        }
+      } catch (downloadError) {
+        console.error('Error downloading image:', downloadError);
+        return this.useFallbackAnalysis(imageUrl);
+      }
+
+      // Make parallel API requests for different features
+      const [safeSearchResponse, labelResponse, objectResponse] = await Promise.all([
+        this.client.safeSearchDetection(imageData),
+        this.client.labelDetection(imageData),
+        this.client.objectLocalization(imageData)
+      ]);
+
+      // Process the API responses
+      const result = this.processApiResponse(
+        safeSearchResponse[0],
+        labelResponse[0],
+        objectResponse[0]
+      );
+
+      // Cache the result
+      await this.cacheResult(imageUrl, result);
       
-      // For reference, the implementation would look something like this:
-      // const imageData = await this.downloadImage(imageUrl);
-      // const safeSearchResponse = await this.client.safeSearchDetection(imageData);
-      // const labelResponse = await this.client.labelDetection(imageData);
-      // const objectResponse = await this.client.objectLocalization(imageData);
-      // const result = this.processApiResponse(safeSearchResponse[0], labelResponse[0], objectResponse[0]);
-      // await this.cacheResult(imageUrl, result);
-      
-      return this.useFallbackAnalysis(imageUrl);
+      return result;
     } catch (error) {
       console.error('Error calling Google Vision API:', error);
       
@@ -114,14 +136,26 @@ export class VisionService {
   }
 
   /**
+   * Download image data from URL
+   * @param url The image URL
+   * @returns The image data as Buffer
+   */
+  private async downloadImage(url: string): Promise<Buffer> {
+    const response = await axios.get(url, {
+      responseType: 'arraybuffer',
+      timeout: 10000 // 10 second timeout
+    });
+    
+    return Buffer.from(response.data, 'binary');
+  }
+
+  /**
    * Process the Google Vision API response
-   * This is currently unused but will be implemented in the future
    * @param safeSearchResult The SafeSearch detection result
    * @param labelResult The label detection result
    * @param objectResult The object localization result
    * @returns The processed analysis result
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private processApiResponse(safeSearchResult: any, labelResult: any, objectResult: any): ImageAnalysisResult {
     // Process SafeSearch results
     const safeSearch = safeSearchResult?.safeSearchAnnotation || {
@@ -206,11 +240,9 @@ export class VisionService {
 
   /**
    * Cache analysis result
-   * This is currently unused but will be implemented in the future
    * @param imageUrl The image URL that was analyzed
    * @param result The analysis result
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async cacheResult(imageUrl: string, result: ImageAnalysisResult): Promise<void> {
     if (!this.redis) {
       return;
