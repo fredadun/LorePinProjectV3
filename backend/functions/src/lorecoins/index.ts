@@ -1,5 +1,12 @@
-import * as functions from 'firebase-functions';
+import { https } from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
+
+interface AwardLoreCoinsData {
+  userId: string;
+  amount: number;
+  type: 'earn' | 'redeem';
+  description: string;
+}
 
 /**
  * Awards LoreCoins to a user
@@ -7,11 +14,11 @@ import * as admin from 'firebase-admin';
  * - Creates a transaction record
  * - Updates user's LoreCoin balance
  */
-export const awardLoreCoins = functions.https.onCall(async (data, context) => {
+export const awardLoreCoins = https.onCall(async (data: AwardLoreCoinsData, context) => {
   try {
     // Ensure the request is authenticated
     if (!context.auth) {
-      throw new functions.https.HttpsError(
+      throw new https.HttpsError(
         'unauthenticated',
         'The function must be called while authenticated.'
       );
@@ -21,7 +28,7 @@ export const awardLoreCoins = functions.https.onCall(async (data, context) => {
     const { userId, amount, type, description } = data;
     
     if (!userId || !amount || !type || !description) {
-      throw new functions.https.HttpsError(
+      throw new https.HttpsError(
         'invalid-argument',
         'Missing required fields: userId, amount, type, description'
       );
@@ -29,7 +36,7 @@ export const awardLoreCoins = functions.https.onCall(async (data, context) => {
     
     // Only admins can award coins to other users
     if (userId !== context.auth.uid && !context.auth.token.isAdmin) {
-      throw new functions.https.HttpsError(
+      throw new https.HttpsError(
         'permission-denied',
         'Only admins can award coins to other users.'
       );
@@ -63,7 +70,7 @@ export const awardLoreCoins = functions.https.onCall(async (data, context) => {
     return { success: true, transactionId: transactionRef.id };
   } catch (error) {
     console.error('Error awarding LoreCoins:', error);
-    throw new functions.https.HttpsError(
+    throw new https.HttpsError(
       'internal',
       'Error awarding LoreCoins.',
       error

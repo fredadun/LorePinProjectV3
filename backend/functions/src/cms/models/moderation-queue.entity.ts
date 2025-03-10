@@ -29,31 +29,38 @@ export class ModerationQueueItem {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'enum', enum: ContentType })
+  @Column({ 
+    type: 'simple-enum', 
+    enum: ContentType 
+  })
   content_type: ContentType;
 
   @Column()
   content_id: string;
 
-  @Column({ type: 'enum', enum: ModerationStatus, default: ModerationStatus.PENDING })
+  @Column({ 
+    type: 'simple-enum', 
+    enum: ModerationStatus, 
+    default: ModerationStatus.PENDING 
+  })
   status: ModerationStatus;
 
   @Column({ nullable: true })
   firebase_uid: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   content_data: any;
 
   @Column({ nullable: true })
   media_url: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   ai_analysis: any;
 
   @Column({ type: 'float', nullable: true })
   risk_score: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   flags: any;
 
   @Column({ nullable: true })

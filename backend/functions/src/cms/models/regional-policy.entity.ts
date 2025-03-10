@@ -18,7 +18,7 @@ export class RegionalPolicy {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'simple-json' })
   rules: {
     content_restrictions: string[];
     age_restrictions: number | null;

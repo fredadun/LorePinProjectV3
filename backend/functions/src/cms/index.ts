@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
+import { region } from 'firebase-functions/v1';
 import { Request, Response, NextFunction } from 'express';
 import { initializeDatabase } from './utils/database.config';
 import { verifyToken, isSuperAdmin, isContentAdmin } from './middleware/auth.middleware';
@@ -88,4 +88,4 @@ app.put('/regional-policies/:id', verifyToken, isContentAdmin, challengeControll
 app.delete('/regional-policies/:id', verifyToken, isContentAdmin, challengeController.deleteRegionalPolicy.bind(challengeController));
 
 // Export the Express app as a Firebase Function
-export const cms = functions.region('europe-west2').https.onRequest(app); 
+export const cms = region('europe-west2').https.onRequest(app); 

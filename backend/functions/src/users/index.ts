@@ -1,5 +1,9 @@
-import * as functions from 'firebase-functions';
+import { https } from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
+
+interface GetUserProfileData {
+  userId?: string;
+}
 
 /**
  * Retrieves a user's profile data
@@ -7,11 +11,11 @@ import * as admin from 'firebase-admin';
  * - Includes follower and following counts
  * - Includes LoreCoin balance
  */
-export const getUserProfile = functions.https.onCall(async (data, context) => {
+export const getUserProfile = https.onCall(async (data: GetUserProfileData, context) => {
   try {
     // Ensure the user is authenticated
     if (!context.auth) {
-      throw new functions.https.HttpsError(
+      throw new https.HttpsError(
         'unauthenticated',
         'The function must be called while authenticated.'
       );
@@ -23,7 +27,7 @@ export const getUserProfile = functions.https.onCall(async (data, context) => {
     const userDoc = await admin.firestore().collection('users').doc(userId).get();
     
     if (!userDoc.exists) {
-      throw new functions.https.HttpsError(
+      throw new https.HttpsError(
         'not-found',
         `User profile for ${userId} not found.`
       );
@@ -32,7 +36,7 @@ export const getUserProfile = functions.https.onCall(async (data, context) => {
     const userData = userDoc.data();
     
     if (!userData) {
-      throw new functions.https.HttpsError(
+      throw new https.HttpsError(
         'internal',
         'User data is undefined.'
       );
@@ -70,7 +74,7 @@ export const getUserProfile = functions.https.onCall(async (data, context) => {
     };
   } catch (error) {
     console.error('Error getting user profile:', error);
-    throw new functions.https.HttpsError(
+    throw new https.HttpsError(
       'internal',
       'Error retrieving user profile.',
       error

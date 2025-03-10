@@ -1,11 +1,11 @@
-import * as functions from 'firebase-functions';
+import { auth } from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
 
 /**
  * Creates a user profile in Firestore when a new user signs up
  * Triggered by Firebase Auth user creation
  */
-export const createUserProfile = functions.auth.user().onCreate(async (user: functions.auth.UserRecord) => {
+export const createUserProfile = auth.user().onCreate(async (user: admin.auth.UserRecord) => {
   try {
     const { uid, email, displayName, photoURL } = user;
     

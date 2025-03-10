@@ -1,35 +1,21 @@
 import { DataSource } from 'typeorm';
-import * as functions from 'firebase-functions';
-
-// Load environment variables
-const {
-  POSTGRES_HOST,
-  POSTGRES_PORT,
-  POSTGRES_USER,
-  POSTGRES_PASSWORD,
-  POSTGRES_DATABASE,
-} = functions.config().postgres || {
-  POSTGRES_HOST: 'localhost',
-  POSTGRES_PORT: 5432,
-  POSTGRES_USER: 'postgres',
-  POSTGRES_PASSWORD: 'postgres',
-  POSTGRES_DATABASE: 'lorepin_cms',
-};
+import * as path from 'path';
+import * as os from 'os';
 
 // Create and export the DataSource
+// For simplicity, we'll use SQLite for both development and production for now
 export const AppDataSource = new DataSource({
-  type: 'postgres',
-  host: POSTGRES_HOST,
-  port: Number(POSTGRES_PORT),
-  username: POSTGRES_USER,
-  password: POSTGRES_PASSWORD,
-  database: POSTGRES_DATABASE,
-  synchronize: false, // Set to false in production
+  type: 'sqlite',
+  // In production (Cloud Functions), use the tmp directory
+  // In development, use the local data directory
+  database: process.env.NODE_ENV === 'production'
+    ? path.join(os.tmpdir(), 'lorepin_cms.sqlite')
+    : path.join(__dirname, '../../../data/lorepin_cms.sqlite'),
+  synchronize: true,
   logging: ['error', 'warn'],
   entities: [__dirname + '/../models/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-  subscribers: [],
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  subscribers: []
 });
 
 // Initialize the database connection

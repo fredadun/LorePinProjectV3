@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions';
+import { firestore } from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
 
 /**
@@ -7,7 +7,7 @@ import * as admin from 'firebase-admin';
  * - Updates challenge statistics
  * - Awards LoreCoins to the user
  */
-export const processSubmission = functions.firestore
+export const processSubmission = firestore
   .document('submissions/{submissionId}')
   .onCreate(async (snapshot, context) => {
     try {

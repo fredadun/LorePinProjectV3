@@ -38,10 +38,18 @@ export class Challenge {
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'enum', enum: ChallengeStatus, default: ChallengeStatus.DRAFT })
+  @Column({ 
+    type: 'simple-enum', 
+    enum: ChallengeStatus, 
+    default: ChallengeStatus.DRAFT 
+  })
   status: ChallengeStatus;
 
-  @Column({ type: 'enum', enum: ChallengeDifficulty, default: ChallengeDifficulty.BEGINNER })
+  @Column({ 
+    type: 'simple-enum', 
+    enum: ChallengeDifficulty, 
+    default: ChallengeDifficulty.BEGINNER 
+  })
   difficulty: ChallengeDifficulty;
 
   @Column({ nullable: true })
@@ -57,7 +65,7 @@ export class Challenge {
   @Column({ nullable: true })
   sponsor_id: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   location: {
     latitude: number;
     longitude: number;
@@ -66,10 +74,10 @@ export class Challenge {
     country: string;
   };
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   rules: any;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   rewards: {
     lore_coins: number;
     experience_points: number;
@@ -77,10 +85,10 @@ export class Challenge {
     other_rewards: any;
   };
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ nullable: true })
   start_date: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ nullable: true })
   end_date: Date;
 
   @Column({ default: false })
@@ -89,20 +97,20 @@ export class Challenge {
   @Column({ default: false })
   is_private: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   media: {
     cover_image: string;
     gallery: string[];
     video_url: string;
   };
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   requirements: string[];
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   tags: string[];
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   regional_policies: {
     region: string;
     policy_id: string;
@@ -116,7 +124,7 @@ export class Challenge {
   @JoinColumn({ name: 'approved_by' })
   approver: User;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ nullable: true })
   approved_at: Date;
 
   @Column({ nullable: true })

@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions';
+// import * as functions from 'firebase-functions';
 import { OpenAIService, TextAnalysisResult } from './openai.service';
 import { VisionService, ImageAnalysisResult } from './vision.service';
 import { RekognitionService, VideoAnalysisResult } from './rekognition.service';
