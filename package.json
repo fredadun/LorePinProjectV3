@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/fredadun/LorePinProjectV3#readme",
   "dependencies": {
-    "firebase": "^10.8.0",
+    "firebase": "^10.9.0",
     "firebase-admin": "^11.11.1",
     "firebase-functions": "^4.5.0",
     "lorepin-project": "file:"
