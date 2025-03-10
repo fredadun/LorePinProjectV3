@@ -32,16 +32,18 @@ The CMS implementation follows a phased approach:
 
 ## Documentation
 
-- [CMS Specifications](./CMSSpecifications.md) - Overview of the CMS requirements and features
-- [CMS Implementation Plan](./CMSImplementationPlan.md) - Detailed plan for implementing the CMS
-- [CMS Database Schema](./CMSDatabaseSchema.md) - Database schema design for the CMS
-- [AI-Driven Content Moderation](./CMSAIModeration.md) - Design for AI-driven content moderation
-- [CMS UI Mockups](./CMSUIMockups.md) - UI mockups for the CMS
+- [CMS Specifications](./cms-specifications.md) - Overview of the CMS requirements and features
+- [CMS Implementation Plan](./cms-implementation-plan.md) - Detailed plan for implementing the CMS
+- [CMS Database Schema](./cms-database-schema.md) - Database schema design for the CMS
+- [AI-Driven Content Moderation](./cms-ai-moderation.md) - Design for AI-driven content moderation
+- [CMS UI Mockups](./cms-ui-mockups.md) - UI mockups for the CMS
 - [Implementation Progress](./implementation-progress.md) - Current progress of the implementation
 - [Implementation Summary](./implementation-summary.md) - Summary of the implementation
+- [AI Integration Summary](./ai-integration-summary.md) - Summary of the AI integration changes
 - [Next Phase Plan](./next-phase-plan.md) - Detailed plan for the next implementation phase
 - [Pre-Deployment Checklist](./pre-deployment-checklist.md) - Checklist for pre-deployment verification
 - [UI Testing Guide](./ui-testing-guide.md) - Guide for testing the CMS UI
+- [Implementation Plans Summary](./implementation-plans-summary.md) - Summary of all implementation plans
 - [Master Implementation Plan](./master-implementation-plan.md) - Comprehensive plan tying all implementation phases together
 - [AI Integration Plan](./ai-integration-plan.md) - Detailed plan for AI service integration
 - [Frontend Implementation Plan](./frontend-implementation-plan.md) - Detailed plan for frontend components
