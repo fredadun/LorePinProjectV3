@@ -37,6 +37,7 @@ The CMS implementation follows a phased approach:
 - [CMS Database Schema](./cms-database-schema.md) - Database schema design for the CMS
 - [AI-Driven Content Moderation](./cms-ai-moderation.md) - Design for AI-driven content moderation
 - [CMS UI Mockups](./cms-ui-mockups.md) - UI mockups for the CMS
+- [CMS User Journeys](./cms-user-journeys.md) - Detailed user journeys for Admin and Moderator roles
 - [Implementation Progress](./implementation-progress.md) - Current progress of the implementation
 - [Implementation Summary](./implementation-summary.md) - Summary of the implementation
 - [AI Integration Summary](./ai-integration-summary.md) - Summary of the AI integration changes
