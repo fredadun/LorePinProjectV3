@@ -25,6 +25,30 @@ This is the React Admin implementation of the LorePin CMS UI, which provides a m
 npm install
 ```
 
+4. Create a `.env` file based on the `.env.example` file:
+
+```bash
+cp .env.example .env
+```
+
+5. Update the `.env` file with your Firebase configuration values.
+
+## Environment Variables
+
+The application uses environment variables to configure Firebase and other settings. These variables are loaded from a `.env` file during the build process.
+
+Required environment variables:
+
+- `REACT_APP_FIREBASE_API_KEY`: Your Firebase API key
+- `REACT_APP_FIREBASE_AUTH_DOMAIN`: Your Firebase auth domain
+- `REACT_APP_FIREBASE_PROJECT_ID`: Your Firebase project ID
+- `REACT_APP_FIREBASE_STORAGE_BUCKET`: Your Firebase storage bucket
+- `REACT_APP_FIREBASE_MESSAGING_SENDER_ID`: Your Firebase messaging sender ID
+- `REACT_APP_FIREBASE_APP_ID`: Your Firebase app ID
+- `REACT_APP_FIREBASE_MEASUREMENT_ID`: Your Firebase measurement ID
+- `REACT_APP_API_URL`: URL for the CMS API
+- `REACT_APP_USE_EMULATORS`: Whether to use Firebase emulators (true/false)
+
 ## Development
 
 To start the development server:

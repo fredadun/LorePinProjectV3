@@ -1,21 +1,43 @@
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyB1eLfwECUvufRcFFwBDaQY6tHHdwkA3Mg", // Updated with a valid API key
-  authDomain: "lorebacking-test.firebaseapp.com",
-  projectId: "lorebacking-test",
-  storageBucket: "lorebacking-test.firebasestorage.app",
-  messagingSenderId: "532363101127",
-  appId: "1:532363101127:web:645922acc5144943d54fe2",
-  measurementId: "G-MSFZ41D7GM"
-};
+// Firebase configuration is loaded from config.js
+// The firebaseConfig variable is defined in config.js
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+try {
+  firebase.initializeApp(firebaseConfig);
+  console.log("Firebase initialized successfully");
+} catch (error) {
+  console.error("Error initializing Firebase:", error);
+  alert("Error initializing Firebase: " + error.message);
+}
 
-// References to Firebase services
+// Get references to Firebase services
 const auth = firebase.auth();
 const db = firebase.firestore();
 const functions = firebase.functions();
+
+// Connect to Firebase emulators when running locally
+if (useEmulators) {
+  console.log("Using Firebase emulators");
+  
+  try {
+    // Connect to Auth emulator - IMPORTANT: Use the correct format without http://
+    auth.useEmulator("localhost", 9099);
+    console.log("Connected to Auth emulator at localhost:9099");
+    
+    // Connect to Firestore emulator
+    db.useEmulator("localhost", 8080);
+    console.log("Connected to Firestore emulator at localhost:8080");
+    
+    // Connect to Functions emulator
+    functions.useEmulator("localhost", 5001);
+    console.log("Connected to Functions emulator at localhost:5001");
+    
+    console.log("All Firebase emulators connected successfully");
+  } catch (error) {
+    console.error("Error connecting to Firebase emulators:", error);
+    alert("Error connecting to Firebase emulators: " + error.message);
+  }
+}
 
 // DOM elements
 const loginContainer = document.getElementById('login-container');
@@ -48,6 +70,7 @@ const challengesResult = document.getElementById('challenges-result');
 auth.onAuthStateChanged(user => {
   if (user) {
     // User is signed in
+    console.log("User is signed in:", user.email);
     loginContainer.classList.add('hidden');
     userContainer.classList.remove('hidden');
     cmsContent.classList.remove('hidden');
@@ -62,6 +85,7 @@ auth.onAuthStateChanged(user => {
     });
   } else {
     // User is signed out
+    console.log("User is signed out");
     loginContainer.classList.remove('hidden');
     userContainer.classList.add('hidden');
     cmsContent.classList.add('hidden');
@@ -83,9 +107,36 @@ loginBtn.addEventListener('click', () => {
     return;
   }
   
+  // Show loading state
+  loginBtn.textContent = 'Logging in...';
+  loginBtn.disabled = true;
+  
+  console.log(`Attempting to sign in user: ${email} with Firebase Auth emulator at localhost:9099`);
+  
   auth.signInWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      console.log("User signed in successfully:", userCredential.user.uid);
+      loginBtn.textContent = 'Login';
+      loginBtn.disabled = false;
+    })
     .catch(error => {
-      alert(`Login error: ${error.message}`);
+      console.error("Login error:", error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      
+      // Provide more helpful error messages based on error code
+      let errorMessage = error.message;
+      if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error: Please check if the Firebase Auth emulator is running at localhost:9099';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'User not found: Please register first or check your email';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password: Please try again';
+      }
+      
+      alert(`Login error: ${errorMessage}`);
+      loginBtn.textContent = 'Login';
+      loginBtn.disabled = false;
     });
 });
 
@@ -99,29 +150,66 @@ registerBtn.addEventListener('click', () => {
     return;
   }
   
+  // Show loading state
+  registerBtn.textContent = 'Registering...';
+  registerBtn.disabled = true;
+  
+  console.log(`Attempting to register user: ${email} with Firebase Auth emulator at localhost:9099`);
+  
   auth.createUserWithEmailAndPassword(email, password)
     .then(userCredential => {
+      console.log("User registered successfully:", userCredential.user.uid);
+      
       // Add user to Firestore with admin role for testing
+      console.log(`Adding user document to Firestore emulator at localhost:8080`);
       return db.collection('users').doc(userCredential.user.uid).set({
         email: email,
         role: 'admin',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     })
+    .then(() => {
+      console.log("User document created in Firestore");
+      registerBtn.textContent = 'Register';
+      registerBtn.disabled = false;
+    })
     .catch(error => {
-      alert(`Registration error: ${error.message}`);
+      console.error("Registration error:", error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      
+      // Provide more helpful error messages based on error code
+      let errorMessage = error.message;
+      if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error: Please check if the Firebase Auth emulator is running at localhost:9099';
+      } else if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Email already in use: Please login instead';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Weak password: Please use a stronger password';
+      }
+      
+      alert(`Registration error: ${errorMessage}`);
+      registerBtn.textContent = 'Register';
+      registerBtn.disabled = false;
     });
 });
 
 // Logout
 logoutBtn.addEventListener('click', () => {
-  auth.signOut();
+  auth.signOut()
+    .then(() => {
+      console.log("User signed out");
+    })
+    .catch(error => {
+      console.error("Logout error:", error);
+    });
 });
 
 // Helper function to make authenticated API calls
 async function callApi(endpoint, method = 'GET', body = null) {
-  // Use the deployed function URL
-  const baseUrl = 'https://europe-west2-lorebacking-test.cloudfunctions.net/cms';
+  // Use the API URL from config.js
+  const baseUrl = getApiUrl();
+  
   const url = `${baseUrl}${endpoint}`;
   
   const headers = {
@@ -140,6 +228,7 @@ async function callApi(endpoint, method = 'GET', body = null) {
   }
   
   try {
+    console.log(`Making API call to ${url}`);
     const response = await fetch(url, options);
     const data = await response.json();
     

@@ -32,10 +32,26 @@ module.exports = {
     'jest/no-identical-title': 'error', // Error on identical test titles
     'jest/prefer-to-have-length': 'warn', // Prefer toHaveLength over checking .length
     'jest/valid-expect': 'error', // Enforce valid expect() usage
+    'no-undef': 'warn', // Warn about undefined variables
   },
   settings: {
     react: {
       version: 'detect', // Automatically detect React version
     },
+  },
+  globals: {
+    window: true,
+    document: true,
+    localStorage: true,
+    console: true,
+    jest: true,
+    describe: true,
+    test: true,
+    it: true,
+    expect: true,
+    beforeEach: true,
+    afterEach: true,
+    beforeAll: true,
+    afterAll: true,
   },
 }; 

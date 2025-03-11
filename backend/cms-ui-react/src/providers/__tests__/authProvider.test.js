@@ -151,14 +151,7 @@ describe('Auth Provider', () => {
 
     test('returns rejected promise when user is not authenticated', async () => {
       // Call checkAuth and expect it to reject
-      try {
-        await authProvider.checkAuth();
-        // If we get here, the test should fail
-        expect(true).toBe(false); // This should not be reached
-      } catch (error) {
-        // If we get here, the test should pass
-        expect(true).toBe(true);
-      }
+      await expect(authProvider.checkAuth()).rejects.toBeDefined();
     });
   });
 
@@ -181,14 +174,7 @@ describe('Auth Provider', () => {
 
     test('returns rejected promise when not authenticated', async () => {
       // Call getPermissions and expect it to reject
-      try {
-        await authProvider.getPermissions();
-        // If we get here, the test should fail
-        expect(true).toBe(false); // This should not be reached
-      } catch (error) {
-        // If we get here, the test should pass
-        expect(true).toBe(true);
-      }
+      await expect(authProvider.getPermissions()).rejects.toBeDefined();
     });
   });
 }); 
