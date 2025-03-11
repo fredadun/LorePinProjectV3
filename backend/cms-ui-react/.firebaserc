@@ -1,0 +1,30 @@
+{
+  "projects": {
+    "default": "lorebacking-test",
+    "staging": "lorepin-staging",
+    "production": "lorepin-prod"
+  },
+  "targets": {
+    "lorebacking-test": {
+      "hosting": {
+        "dev": [
+          "lorebacking-test"
+        ]
+      }
+    },
+    "lorepin-staging": {
+      "hosting": {
+        "staging": [
+          "lorepin-staging"
+        ]
+      }
+    },
+    "lorepin-prod": {
+      "hosting": {
+        "production": [
+          "lorepin-prod"
+        ]
+      }
+    }
+  }
+} 
