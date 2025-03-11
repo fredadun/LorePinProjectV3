@@ -18,7 +18,11 @@
     "version:major": "node scripts/bump-version.js major",
     "version:minor": "node scripts/bump-version.js minor",
     "version:patch": "node scripts/bump-version.js patch",
-    "setup:github-secrets": "node scripts/setup-github-secrets.js"
+    "setup:github-secrets": "node scripts/setup-github-secrets.js",
+    "verify:emulators": "node verify-emulator-setup.js",
+    "sync:emulators": "node sync-emulator-config.js",
+    "create:test-user": "node create-test-user.js",
+    "seed:firestore": "node seed-firestore.js"
   },
   "jest": {
     "testEnvironment": "jsdom",
@@ -41,14 +45,18 @@
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.15.6",
+    "axios": "^1.8.2",
+    "chalk": "^4.1.2",
     "cors": "^2.8.5",
-    "express": "^4.18.2",
+    "express": "^4.21.2",
     "firebase": "^10.8.0",
+    "firebase-admin": "^11.11.1",
     "lorepin-cms-ui-react": "file:",
     "ra-data-json-server": "^4.16.0",
     "react": "^18.2.0",
     "react-admin": "^4.16.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.23.7",
@@ -59,8 +67,10 @@
     "@testing-library/user-event": "^14.5.2",
     "babel-jest": "^29.7.0",
     "babel-loader": "^9.1.3",
+    "copy-webpack-plugin": "^13.0.0",
     "cross-env": "^7.0.3",
     "css-loader": "^6.8.1",
+    "dotenv": "^16.4.7",
     "eslint": "^8.56.0",
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-react": "^7.33.2",

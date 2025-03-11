@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Configuration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .test-section {
+            margin-bottom: 30px;
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Firebase Configuration Test</h1>
+    
+    <div class="card">
+        <h2>Status</h2>
+        <div id="status">Checking Firebase configuration...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Firebase Configuration</h2>
+        <pre id="config-display">Loading configuration...</pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>Authentication Test</h2>
+        <div>
+            <button id="login-btn">Login with Test User</button>
+            <button id="logout-btn">Logout</button>
+        </div>
+        <div id="auth-status">Not authenticated</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Firestore Test</h2>
+        <div>
+            <button id="read-data-btn">Read Test Data</button>
+            <button id="write-data-btn">Write Test Data</button>
+        </div>
+        <pre id="firestore-result">No data fetched yet</pre>
+    </div>
+    
+    <div id="loading">
+        <div class="spinner"></div> Processing...
+    </div>
+
+    <!-- Include Firebase initialization script -->
+    <script src="firebase-init.js"></script>
+    
+    <script>
+        // Wait for Firebase to initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if firebase is defined after a short delay
+            setTimeout(checkFirebase, 1000);
+        });
+
+        function checkFirebase() {
+            const statusElement = document.getElementById('status');
+            const configDisplay = document.getElementById('config-display');
+            
+            if (typeof firebase === 'undefined') {
+                statusElement.innerHTML = '<span class="error">ERROR: Firebase is not defined. Check console for errors.</span>';
+                configDisplay.textContent = 'Firebase configuration not loaded';
+                return;
+            }
+            
+            try {
+                // Display a sanitized version of the config (without API key)
+                const firebaseConfig = window.firebaseConfig || {};
+                const sanitizedConfig = { ...firebaseConfig };
+                
+                if (sanitizedConfig.apiKey) {
+                    sanitizedConfig.apiKey = sanitizedConfig.apiKey.substring(0, 4) + '...[HIDDEN]';
+                }
+                
+                configDisplay.textContent = JSON.stringify(sanitizedConfig, null, 2);
+                
+                // Check if Firebase is initialized
+                if (firebase.apps.length > 0) {
+                    statusElement.innerHTML = '<span class="success">SUCCESS: Firebase is initialized</span>';
+                    
+                    // Check if using emulators
+                    const usingEmulators = firebaseConfig.useEmulators || false;
+                    if (usingEmulators) {
+                        statusElement.innerHTML += '<br><span class="warning">Using Firebase Emulators</span>';
+                    } else {
+                        statusElement.innerHTML += '<br><span class="warning">Using Production Firebase</span>';
+                    }
+                    
+                    // Setup auth listeners
+                    setupAuthListeners();
+                    
+                    // Setup Firestore test buttons
+                    setupFirestoreTests();
+                } else {
+                    statusElement.innerHTML = '<span class="error">ERROR: Firebase is not initialized</span>';
+                }
+            } catch (error) {
+                statusElement.innerHTML = `<span class="error">ERROR: ${error.message}</span>`;
+                console.error('Firebase initialization error:', error);
+            }
+        }
+        
+        function setupAuthListeners() {
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const authStatus = document.getElementById('auth-status');
+            const loading = document.getElementById('loading');
+            
+            // Update auth status on auth state change
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    authStatus.innerHTML = `<span class="success">Logged in as: ${user.email}</span>`;
+                    loginBtn.disabled = true;
+                    logoutBtn.disabled = false;
+                } else {
+                    authStatus.innerHTML = '<span class="warning">Not authenticated</span>';
+                    loginBtn.disabled = false;
+                    logoutBtn.disabled = true;
+                }
+            });
+            
+            // Login with test user
+            loginBtn.addEventListener('click', function() {
+                loading.style.display = 'block';
+                
+                // Use the test user credentials
+                firebase.auth().signInWithEmailAndPassword('admin@example.com', 'password123')
+                    .then((userCredential) => {
+                        loading.style.display = 'none';
+                    })
+                    .catch((error) => {
+                        loading.style.display = 'none';
+                        authStatus.innerHTML = `<span class="error">Login Error: ${error.message}</span>`;
+                        console.error('Login error:', error);
+                    });
+            });
+            
+            // Logout
+            logoutBtn.addEventListener('click', function() {
+                loading.style.display = 'block';
+                
+                firebase.auth().signOut()
+                    .then(() => {
+                        loading.style.display = 'none';
+                    })
+                    .catch((error) => {
+                        loading.style.display = 'none';
+                        authStatus.innerHTML = `<span class="error">Logout Error: ${error.message}</span>`;
+                        console.error('Logout error:', error);
+                    });
+            });
+        }
+        
+        function setupFirestoreTests() {
+            const readDataBtn = document.getElementById('read-data-btn');
+            const writeDataBtn = document.getElementById('write-data-btn');
+            const firestoreResult = document.getElementById('firestore-result');
+            const loading = document.getElementById('loading');
+            
+            // Read test data
+            readDataBtn.addEventListener('click', function() {
+                loading.style.display = 'block';
+                
+                firebase.firestore().collection('test').doc('firebase-test')
+                    .get()
+                    .then((doc) => {
+                        loading.style.display = 'none';
+                        
+                        if (doc.exists) {
+                            firestoreResult.innerHTML = `<span class="success">Document data:</span>\n${JSON.stringify(doc.data(), null, 2)}`;
+                        } else {
+                            firestoreResult.innerHTML = '<span class="warning">No test document found. Try writing test data first.</span>';
+                        }
+                    })
+                    .catch((error) => {
+                        loading.style.display = 'none';
+                        firestoreResult.innerHTML = `<span class="error">Error reading document: ${error.message}</span>`;
+                        console.error('Error reading document:', error);
+                    });
+            });
+            
+            // Write test data
+            writeDataBtn.addEventListener('click', function() {
+                loading.style.display = 'block';
+                
+                const testData = {
+                    message: 'Hello from Firebase Test',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                firebase.firestore().collection('test').doc('firebase-test')
+                    .set(testData)
+                    .then(() => {
+                        loading.style.display = 'none';
+                        firestoreResult.innerHTML = `<span class="success">Document successfully written!</span>\n${JSON.stringify(testData, null, 2)}`;
+                    })
+                    .catch((error) => {
+                        loading.style.display = 'none';
+                        firestoreResult.innerHTML = `<span class="error">Error writing document: ${error.message}</span>`;
+                        console.error('Error writing document:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html> 
